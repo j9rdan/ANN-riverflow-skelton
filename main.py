@@ -40,21 +40,39 @@ class NeuralNetwork:
         # return (standard - 0.1 / 0.8)(max - min) + min
         pass
 
-    def sigmoid(self, x):
-        # return output = 1.0 / (1 + np.exp(-x))
-        pass
+    @staticmethod
+    def sigmoid(x):
+        return 1.0 / (1 + np.exp(-x))
 
     def sigmoid_dxdy(self, x):
         # return x * (1.0 - x)
         pass
 
     def fwrd_prop(self, inputs):
-        # neurons (activation) = inputs
-        # iterate through network layers:
-            # matrix mult between previous neurons & weights
-            # apply sigmoid function
-            # store neurons for backprop
-        pass
+
+
+        outputs = inputs    # store input layer
+        print("inputs:", outputs)
+        self.outputs[0] = outputs
+        j = 0
+        for i, weight in enumerate(self.weights):   # loop through layers
+            print("i:", i)
+            bias = self.biases[i][j][0]     # bias for each neuron
+            print("bias:", bias)
+            weighted_sum = np.dot(outputs, weight) + bias    # S : matrix mult. on previous output & weights
+            print("weighted sum:", weighted_sum)
+            outputs = NeuralNetwork.sigmoid(weighted_sum)    # f(S) : apply sigmoid function to weighted sum
+            self.outputs[i + 1] = outputs   # save outputs for next layer
+            # j += 1
+        print("new outputs:", outputs)
+
+        # return outputs
+
+
+
+
+
+
 
     def back_prop(self, inputs):
         # iterate backwards through previous layer
@@ -93,5 +111,8 @@ if __name__ == "__main__":
     # predict
     nn = NeuralNetwork([2, 5, 1])
 
-    for val in enumerate(nn.db):
-        print(val)
+    inputs = [1, 3]
+    nn.fwrd_prop(inputs)
+    print()
+    for b in nn.biases:
+        print(b)
