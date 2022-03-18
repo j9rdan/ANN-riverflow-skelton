@@ -7,6 +7,15 @@ class NeuralNetwork:
 
     def __init__(self, layers):
 
+        """
+        Constructor requiring a list of integers representing the number of neurons in each layer.
+
+        :param layers (list): [in, ..., out]
+            in = number of inputs
+            ... = number of neurons in hidden layer, >1 intermediary number represents multiple hidden layers
+            out = number of outputs
+        """
+
         self.layers = layers
 
         # store random weights & 0 for derivatives of weights
