@@ -1,17 +1,27 @@
-from random import random
+# from random import random
 import numpy as np
 import math
 
 
 class NeuralNetwork:
 
-    def __init__(self, num_inputs, num_h_layers, num_outputs):
-        # initialise params
-        # create layer structure
-        # set random weights
-        # store neurons per layer
-        # store derivatives per layer
-        pass
+    def __init__(self, layers):
+
+        self.layers = layers
+
+        # store random weights & 0 for derivatives of weights
+        # 2d array: rows = layers[i] (current layer neurons), columns = layers[i+1] (next layer neurons)
+        self.weights = [np.random.rand(layers[i], layers[i + 1]) for i in range(len(layers) - 1)]
+        self.dw = [np.zeros((layers[i], layers[i + 1])) for i in range(len(layers) - 1)]
+
+        # initialise all neuron outputs (activations) to 0
+        # 2d array: list storing list of n 0's for each layer
+        self.outputs = [np.zeros(layers[i]) for i in range(len(layers))]
+
+        # store random biases & 0 for derivatives of biases
+        # 2d array: list storing list of biases for each layer
+        self.biases = [np.random.randn(layers[i+1], 1) for i in range(len(layers) - 1)]
+        self.db = [np.zeros((layers[i+1], 1)) for i in range(len(layers) - 1)]
 
     def standardise(self, dataset):
         # return 0.8 * ((val - min)/(max - min)) + 0.1
@@ -72,4 +82,7 @@ if __name__ == "__main__":
     # train ANN
     # initialise inputs, targets
     # predict
-    pass
+    nn = NeuralNetwork([2, 5, 1])
+
+    for val in enumerate(nn.db):
+        print(val)
