@@ -42,34 +42,46 @@ class NeuralNetwork:
 
     @staticmethod
     def sigmoid(x):
-        return 1.0 / (1 + np.exp(-x))
+        return 1.0 / (1.0 + np.exp(-x))
 
     def sigmoid_dxdy(self, x):
         # return x * (1.0 - x)
         pass
 
-    def fwrd_prop(self, inputs):
+    def fwrd_prop(self, inputs, test):
 
+        """
+        Performs forward pass from one layer to the next, calculating the weighted sum, S of inputs and
+        applying the sigmoid function, f(S) to return an output, which is used as an input for the next layer.
+
+        :param inputs (list): input data of the form [x1, x2, ..., xn] where n = self.layers[0]
+        :param test (bool): set to True to include debug logs
+        :return: outputs (list): calculated sigmoid values to use when passing backwards
+        """
 
         outputs = inputs    # store input layer
-        print("inputs:", outputs)
-        self.outputs[0] = outputs
-        j = 0
-        for i, weight in enumerate(self.weights):   # loop through layers
-            print("i:", i)
-            bias = self.biases[i][j][0]     # bias for each neuron
-            print("bias:", bias)
-            weighted_sum = np.dot(outputs, weight) + bias    # S : matrix mult. on previous output & weights
-            print("weighted sum:", weighted_sum)
-            outputs = NeuralNetwork.sigmoid(weighted_sum)    # f(S) : apply sigmoid function to weighted sum
+        if test:
+            print("inputs:", outputs)
+            for b in self.biases:
+                print("stored biases:", b)
+        self.outputs[0] = outputs   # save outputs for backprop
+        bias = 0
+        for i, weight in enumerate(self.weights):
+            if test:
+                print("i:", i)
+            for j in range(len(self.biases[i])):
+                bias = self.biases[i][j][0]     # get current neuron's bias
+                if test:
+                    print("retrieved bias:", bias)
+            weighted_sum = np.dot(outputs, weight) + bias   # S : matrix mult. on previous output & weights
+            if test:
+                print("weighted sum:", weighted_sum)
+            outputs = NeuralNetwork.sigmoid(weighted_sum)   # f(S) : apply sigmoid function to weighted sum
             self.outputs[i + 1] = outputs   # save outputs for next layer
-            # j += 1
-        print("new outputs:", outputs)
+        if test:
+            print("new outputs:", outputs)
 
-        # return outputs
-
-
-
+        return outputs
 
 
 
@@ -111,8 +123,6 @@ if __name__ == "__main__":
     # predict
     nn = NeuralNetwork([2, 5, 1])
 
-    inputs = [1, 3]
-    nn.fwrd_prop(inputs)
+    test_inputs = [1, 3]
+    nn.fwrd_prop(test_inputs, test=True)
     print()
-    for b in nn.biases:
-        print(b)
