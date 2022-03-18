@@ -1,6 +1,4 @@
-# from random import random
 import numpy as np
-import math
 
 
 class NeuralNetwork:
@@ -10,7 +8,7 @@ class NeuralNetwork:
         """
         Constructor requiring a list of integers representing the number of neurons in each layer.
 
-        :param layers (list): [in, ..., out]
+        :param layers:   (list) [in, ..., out]
             in = number of inputs
             ... = number of neurons in hidden layer, >1 intermediary number represents multiple hidden layers
             out = number of outputs
@@ -41,8 +39,15 @@ class NeuralNetwork:
         pass
 
     @staticmethod
-    def sigmoid(x):
-        return 1.0 / (1.0 + np.exp(-x))
+    def sigmoid(S):
+
+        """
+        Calculates the sigmoid activation function for a given weighted sum, S
+
+        :param S:   (float) value of the weighted sum
+        :return:    (float) output value, u = f(S)
+        """
+        return 1.0 / (1.0 + np.exp(-S))
 
     def sigmoid_dxdy(self, x):
         # return x * (1.0 - x)
@@ -54,9 +59,9 @@ class NeuralNetwork:
         Performs forward pass from one layer to the next, calculating the weighted sum, S of inputs and
         applying the sigmoid function, f(S) to return an output, which is used as an input for the next layer.
 
-        :param inputs (list): input data of the form [x1, x2, ..., xn] where n = self.layers[0]
-        :param test (bool): set to True to include debug logs
-        :return: outputs (list): calculated sigmoid values to use when passing backwards
+        :param inputs:    (list) input data of the form [x1, x2, ..., xn] where n = self.layers[0]
+        :param test:      (bool) set to True to include debug logs
+        :return: outputs: (list) calculated sigmoid values to use when passing backwards
         """
 
         outputs = inputs    # store input layer
@@ -82,9 +87,6 @@ class NeuralNetwork:
             print("new outputs:", outputs)
 
         return outputs
-
-
-
 
     def back_prop(self, inputs):
         # iterate backwards through previous layer
