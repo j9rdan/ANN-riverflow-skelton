@@ -31,21 +31,17 @@ class NeuralNetwork:
         # print(new_inputs)
         return new_inputs
 
-    def back_prop(self):
+    def back_prop(self, correct=1):
 
-        prev_results = []
+        deltas = []
         for i, layer in reversed(list(enumerate(self.layers))):    # start from last layer
-            # print(str(i), ":", self.layers[i])
-            prev_results = []
-            for neuron in self.layers[i-1]:     # for each neuron in the previous layer
-                prev_results.append(neuron.output)
-            # print()
-            # print("previous results:\n", prev_results)
-            for neuron in layer:
-                neuron.inputs = prev_results    # save outputs from previous layer into current
-                print()
-                print(neuron.inputs)
+            for neuron in layer:    # for each neuron in a layer
+                derivative = NeuralNetwork.sigmoid_dxdy(neuron.output)  # calc f'(S)
+                delta = (correct - neuron.output) * derivative  #
+                deltas.append(delta)
 
+        # print(deltas)
+        return deltas
 
 
     @staticmethod
@@ -57,6 +53,10 @@ class NeuralNetwork:
         :return:    (float) output value, u = f(S)
         """
         return 1.0 / (1.0 + np.exp(-S))
+
+    @staticmethod
+    def sigmoid_dxdy(u):
+        return u * (1.0 - u)
 
 
 
