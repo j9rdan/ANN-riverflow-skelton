@@ -7,7 +7,6 @@ class NeuralNetwork:
 
         """
         Constructor requiring a list of integers representing the number of neurons in each layer.
-
         :param layers:   (list) [in, ..., out]
             in = number of inputs
             ... = number of neurons in hidden layer, >1 intermediary number represents multiple hidden layers
@@ -43,7 +42,6 @@ class NeuralNetwork:
 
         """
         Calculates the sigmoid activation function for a given weighted sum, S
-
         :param S:   (float) value of the weighted sum
         :return:    (float) output value, u = f(S)
         """
@@ -58,7 +56,6 @@ class NeuralNetwork:
         """
         Performs forward pass from one layer to the next, calculating the weighted sum, S of inputs and
         applying the sigmoid function, f(S) to return an output, which is used as an input for the next layer.
-
         :param inputs:    (list) input data of the form [x1, x2, ..., xn] where n = self.layers[0]
         :param test:      (bool) set to True to include debug logs
         :return: outputs: (list) calculated sigmoid values to use when passing backwards
@@ -71,6 +68,7 @@ class NeuralNetwork:
                 print("stored biases:", b)
         self.outputs[0] = outputs   # save outputs for backprop
         bias = 0
+        new_inputs = []
         for i, weight in enumerate(self.weights):
             if test:
                 print("i:", i)
@@ -82,11 +80,12 @@ class NeuralNetwork:
             if test:
                 print("weighted sum:", weighted_sum)
             outputs = NeuralNetwork.sigmoid(weighted_sum)   # f(S) : apply sigmoid function to weighted sum
-            self.outputs[i + 1] = outputs   # save outputs for next layer
+            new_inputs.append(outputs)
+            self.outputs[i + 1] = outputs   #    save outputs for next layer
         if test:
-            print("new outputs:", outputs)
+            print("new outputs:", new_inputs)
 
-        return outputs
+        return new_inputs
 
     def back_prop(self, inputs):
         # iterate backwards through previous layer
