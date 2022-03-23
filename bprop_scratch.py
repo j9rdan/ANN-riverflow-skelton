@@ -42,13 +42,13 @@ class NeuralNetwork:
                 # print("layer", str(i-1), "weights:", previous_weights)
             for j, neuron in enumerate(layer):
                 weights_in = [neuron_weights[j] for neuron_weights in previous_weights]    # store pr
-                print("incoming weights to layer", str(i), weights_in)
+                # print("incoming weights to layer", str(i), weights_in)
                 weighted_sum = sum(np.multiply(neuron.inputs, weights_in)) + neuron.bias  # calc weighted sum (S)
                 u = NeuralNetwork.sigmoid(weighted_sum)    # apply sigmoid to weighted sum (u=f(S))
                 neuron.output = u   # save output into corresponding neuron
                 new_inputs.append(u)   # store output into list
 
-        # print("outputs:", new_inputs)
+        print("final output:", new_inputs[-1])
         return new_inputs
 
     def back_prop(self, correct_output=1):
@@ -94,35 +94,63 @@ class NeuralNetwork:
         """
         for i in range(len(self.layers)):   # loop through layers
             if i < len(self.layers)-1:
+                print("i:", str(i))
                 # store delta of each neuron from next layer:
                 deltas = [self.layers[i+1][j].delta for j in range(len(self.layers[i][0].weights))]
                 # print("deltas:", deltas)
                 for neuron in self.layers[i]:   # for each neuron in a layer
-                    # print("current weights:", neuron.weights)
+                    print("current weights:", neuron.weights)
                     neuron.weights = neuron.weights * deltas * learn_rate * neuron.output   # update weights
-                    # print("current bias:", neuron.bias)
                     neuron.bias += learn_rate * neuron.delta    # update bias
-                    # print("new weights:", neuron.weights)
+                    # print("current bias:", neuron.bias)
+                    print("new weights:", neuron.weights)
                     # print("new bias:", neuron.bias)
 
 
-n1 = Neuron([1], 3)
-n2 = Neuron([2], 3)
-n3 = Neuron([3, 3], 1)
-n4 = Neuron([2, 2], 1)
-n5 = Neuron([2, 2], 1)
-n6 = Neuron([2, 2, 2], 1)
+    def train(self, data, epochs, l_rate):
+        pass
 
 
-l1 = [n1, n2]
-l2 = [n3, n4, n5]
-l3 = [n6]
 
-mlp = NeuralNetwork([l1, l2, l3])
 
-for epoch in range(500):
-    mlp.fwrd_prop()
-    mlp.back_prop()
-    mlp.update_weights(0.5)
+# n1 = Neuron([1], 3)
+# n2 = Neuron([2], 3)
+# n3 = Neuron([3, 3], 1)
+# n4 = Neuron([2, 2], 1)
+# n5 = Neuron([2, 2], 1)
+# n6 = Neuron([2, 2, 2], 1)
+#
+#
+# l1 = [n1, n2]
+# l2 = [n3, n4, n5]
+# l3 = [n6]
+#
+# mlp = NeuralNetwork([l1, l2, l3])
+#
+# for epoch in range(15):
+#     mlp.fwrd_prop()
+#     mlp.back_prop()
+#     mlp.update_weights(0.5)
+
+
+dataset = [[np.random.rand() for i in range(3)] for j in range(5)]
+
+# get no. of hidden neurons
+n_hidden = int(input("Enter no. of hidden neurons: "))
+
+# create layers
+input_layer = [Neuron([column], n_hidden) for column in dataset[0]]
+hidden_layer = [Neuron([], 1) for k in range(n_hidden)]
+output_layer = [Neuron([], 1)]
+
+# create network
+neural_network = NeuralNetwork([input_layer, hidden_layer, output_layer])
+
+
+
+
+
+
+
 
 
