@@ -34,14 +34,21 @@ class NeuralNetwork:
     def fwrd_prop(self):
 
         new_inputs = []
-        for layer in self.layers:
-            for neuron in layer:
-                weighted_sum = sum(np.multiply(neuron.inputs, neuron.weights)) + neuron.bias  # calc weighted sum (S)
+        previous_weights = []
+        for i, layer in enumerate(self.layers):
+            if i != 0:
+                # store weights of each neuron from previous layer:
+                previous_weights = [self.layers[i-1][j].weights for j in range(len(self.layers[i-1]))]
+                # print("layer", str(i-1), "weights:", previous_weights)
+            for j, neuron in enumerate(layer):
+                weights_in = [neuron_weights[j] for neuron_weights in previous_weights]    # store pr
+                print("incoming weights to layer", str(i), weights_in)
+                weighted_sum = sum(np.multiply(neuron.inputs, weights_in)) + neuron.bias  # calc weighted sum (S)
                 u = NeuralNetwork.sigmoid(weighted_sum)    # apply sigmoid to weighted sum (u=f(S))
                 neuron.output = u   # save output into corresponding neuron
                 new_inputs.append(u)   # store output into list
 
-        print("outputs:", new_inputs)
+        # print("outputs:", new_inputs)
         return new_inputs
 
     def back_prop(self, correct_output=1):
@@ -89,7 +96,7 @@ class NeuralNetwork:
             if i < len(self.layers)-1:
                 # store delta of each neuron from next layer:
                 deltas = [self.layers[i+1][j].delta for j in range(len(self.layers[i][0].weights))]
-                print("deltas:", deltas)
+                # print("deltas:", deltas)
                 for neuron in self.layers[i]:   # for each neuron in a layer
                     # print("current weights:", neuron.weights)
                     neuron.weights = neuron.weights * deltas * learn_rate * neuron.output   # update weights
