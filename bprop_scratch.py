@@ -35,14 +35,13 @@ class NeuralNetwork:
 
         new_inputs = []
         for layer in self.layers:
-            # print()
             for neuron in layer:
                 weighted_sum = sum(np.multiply(neuron.inputs, neuron.weights)) + neuron.bias  # calc weighted sum (S)
                 u = NeuralNetwork.sigmoid(weighted_sum)    # apply sigmoid to weighted sum (u=f(S))
                 neuron.output = u   # save output into corresponding neuron
                 new_inputs.append(u)   # store output into list
 
-        # print("new inputs:\n", new_inputs)
+        print("outputs:", new_inputs)
         return new_inputs
 
     def back_prop(self, correct_output=1):
@@ -80,33 +79,24 @@ class NeuralNetwork:
         """
         return u * (1.0 - u)
 
-    # def update_weights(self, learn_rate):
-    #     for i in range(len(self.layers)):
-    #         if i <= len(self.layers)-1:
-    #             for j, neuron in enumerate(self.layers[i]):
-    #                 delta = self.layers[i+1][j].delta
-    #                 print(delta)
-    #                 for weight in neuron.weights:
-    #                     # print("current weight:", weight)
-    #                     weight += learn_rate * neuron.delta
-    #                     # print("new weight:", str(weight))
-
     def update_weights(self, learn_rate):
-        for i in range(len(self.layers)):
+
+        """
+        Updates all weights and biases in the network by descending the gradient of the error.
+        :param learn_rate:  (float) step size to adjust the gradient by (i.e. how quickly to learn)
+        """
+        for i in range(len(self.layers)):   # loop through layers
             if i < len(self.layers)-1:
-                deltas = []
-                for j in range(len(self.layers[i][0].weights)):
-                    deltas.append(self.layers[i+1][j].delta)
+                # store delta of each neuron from next layer:
+                deltas = [self.layers[i+1][j].delta for j in range(len(self.layers[i][0].weights))]
                 print("deltas:", deltas)
-                for neuron in self.layers[i]:
-                    print("current weights:", neuron.weights)
-                    neuron.weights *= neuron.weights * deltas * learn_rate * neuron.output
-                    print("current bias:", neuron.bias)
-                    neuron.bias += learn_rate * neuron.delta
-                    print("new weights:", neuron.weights)
-                    print("new bias:", neuron.bias)
-
-
+                for neuron in self.layers[i]:   # for each neuron in a layer
+                    # print("current weights:", neuron.weights)
+                    neuron.weights = neuron.weights * deltas * learn_rate * neuron.output   # update weights
+                    # print("current bias:", neuron.bias)
+                    neuron.bias += learn_rate * neuron.delta    # update bias
+                    # print("new weights:", neuron.weights)
+                    # print("new bias:", neuron.bias)
 
 
 n1 = Neuron([1], 3)
@@ -123,6 +113,9 @@ l3 = [n6]
 
 mlp = NeuralNetwork([l1, l2, l3])
 
-mlp.fwrd_prop()
-mlp.back_prop()
-mlp.update_weights(0.5)
+for epoch in range(500):
+    mlp.fwrd_prop()
+    mlp.back_prop()
+    mlp.update_weights(0.5)
+
+
