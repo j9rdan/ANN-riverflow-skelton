@@ -48,7 +48,7 @@ class NeuralNetwork:
                 neuron.output = u   # save output into corresponding neuron
                 new_inputs.append(u)   # store output into list
 
-        print("final output:", new_inputs[-1])
+        # print("final output:", new_inputs[-1])
         return new_inputs
 
     def back_prop(self, correct_output=1):
@@ -94,24 +94,63 @@ class NeuralNetwork:
         """
         for i in range(len(self.layers)):   # loop through layers
             if i < len(self.layers)-1:
-                print("i:", str(i))
+                # print("i:", str(i))
                 # store delta of each neuron from next layer:
                 deltas = [self.layers[i+1][j].delta for j in range(len(self.layers[i][0].weights))]
                 # print("deltas:", deltas)
                 for neuron in self.layers[i]:   # for each neuron in a layer
-                    print("current weights:", neuron.weights)
+                    # print("current weights:", neuron.weights)
                     neuron.weights = neuron.weights * deltas * learn_rate * neuron.output   # update weights
                     neuron.bias += learn_rate * neuron.delta    # update bias
                     # print("current bias:", neuron.bias)
-                    print("new weights:", neuron.weights)
+                    # print("new weights:", neuron.weights)
                     # print("new bias:", neuron.bias)
 
 
-    def train(self, data, epochs, l_rate):
-        pass
+    @staticmethod
+    def get_next_row(data, i):
+        return data[i]
 
 
+    @staticmethod
+    def train(data, n_hidden, epochs, l_rate):
 
+        # get no. of hidden neurons
+        n_hidden = int(input("Enter no. of hidden neurons: "))
+
+        # create layers
+        input_layer = [Neuron([column], n_hidden) for column in dataset[0]]  # use 1st row for input neurons
+        print("input layer:", len(input_layer))
+        hidden_layer = [Neuron([3,3], 1) for k in range(n_hidden)]
+        output_layer = [Neuron([3,3,3], 1)]
+
+        # create network
+        neural_network = NeuralNetwork([input_layer, hidden_layer, output_layer])
+
+        """
+        for n epochs:
+            for i rows of data:
+                forward pass
+                backward pass
+                update weights
+                
+            new_inputs = get_next_row():
+            for input in new_inputs:
+                for neuron in input_layer:
+                    neuron.inputs = [input]
+        """
+
+        i = 0
+        neural_network.fwrd_prop()
+        neural_network.back_prop(correct_output=1)
+        neural_network.update_weights(learn_rate=0.5)
+        new_inputs = NeuralNetwork.get_next_row(data, i+1)
+        print("new_inputs:", new_inputs)
+        for k, neuron in enumerate(input_layer):
+            print("current neuron inputs:", neuron.inputs)
+            for input_val in enumerate(new_inputs):
+                neuron.inputs = [new_inputs[k]]
+            print("new neuron inputs:", neuron.inputs)
 
 # n1 = Neuron([1], 3)
 # n2 = Neuron([2], 3)
@@ -133,19 +172,22 @@ class NeuralNetwork:
 #     mlp.update_weights(0.5)
 
 
-dataset = [[np.random.rand() for i in range(3)] for j in range(5)]
+dataset = [[np.random.rand() for i in range(2)] for j in range(5)]
+print("dataset:", dataset)
 
-# get no. of hidden neurons
-n_hidden = int(input("Enter no. of hidden neurons: "))
+# # get no. of hidden neurons
+# n_hidden = int(input("Enter no. of hidden neurons: "))
+#
+# # create layers
+# input_layer = [Neuron([column], n_hidden) for column in dataset[0]]
+# hidden_layer = [Neuron([], 1) for k in range(n_hidden)]
+# output_layer = [Neuron([], 1)]
+#
+# # create network
+# neural_network = NeuralNetwork([input_layer, hidden_layer, output_layer])
+#
 
-# create layers
-input_layer = [Neuron([column], n_hidden) for column in dataset[0]]
-hidden_layer = [Neuron([], 1) for k in range(n_hidden)]
-output_layer = [Neuron([], 1)]
-
-# create network
-neural_network = NeuralNetwork([input_layer, hidden_layer, output_layer])
-
+NeuralNetwork.train(dataset, n_hidden=3, epochs=500, l_rate=0.5)
 
 
 
