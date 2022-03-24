@@ -113,7 +113,7 @@ class NeuralNetwork:
 
 
     @staticmethod
-    def train(data, n_hidden, epochs, l_rate):
+    def train(data, n_hidden, n_epochs, l_rate):
 
         # get no. of hidden neurons
         n_hidden = int(input("Enter no. of hidden neurons: "))
@@ -127,30 +127,19 @@ class NeuralNetwork:
         # create network
         neural_network = NeuralNetwork([input_layer, hidden_layer, output_layer])
 
-        """
-        for n epochs:
-            for i rows of data:
-                forward pass
-                backward pass
-                update weights
-                
-            new_inputs = get_next_row():
-            for input in new_inputs:
-                for neuron in input_layer:
-                    neuron.inputs = [input]
-        """
+        for epoch in range(n_epochs):   # repeat for N epochs
+            print("epoch:", str(epoch))
+            for i, row in enumerate(data):  # for every row
+                neural_network.fwrd_prop()
+                neural_network.back_prop(correct_output=row[i][-1])   # correct value = last column in input data
+                neural_network.update_weights(learn_rate=0.5)
+                if i != len(data)-1:
+                    new_inputs = NeuralNetwork.get_next_row(data, i+1)  # get next row
+                # print("new inputs:", new_inputs)
+                for j, neuron in enumerate(input_layer):
+                    neuron.inputs = [new_inputs[j]]
+                    print("neuron inputs:", neuron.inputs)
 
-        i = 0
-        neural_network.fwrd_prop()
-        neural_network.back_prop(correct_output=1)
-        neural_network.update_weights(learn_rate=0.5)
-        new_inputs = NeuralNetwork.get_next_row(data, i+1)
-        print("new_inputs:", new_inputs)
-        for k, neuron in enumerate(input_layer):
-            print("current neuron inputs:", neuron.inputs)
-            for input_val in enumerate(new_inputs):
-                neuron.inputs = [new_inputs[k]]
-            print("new neuron inputs:", neuron.inputs)
 
 # n1 = Neuron([1], 3)
 # n2 = Neuron([2], 3)
@@ -175,19 +164,7 @@ class NeuralNetwork:
 dataset = [[np.random.rand() for i in range(2)] for j in range(5)]
 print("dataset:", dataset)
 
-# # get no. of hidden neurons
-# n_hidden = int(input("Enter no. of hidden neurons: "))
-#
-# # create layers
-# input_layer = [Neuron([column], n_hidden) for column in dataset[0]]
-# hidden_layer = [Neuron([], 1) for k in range(n_hidden)]
-# output_layer = [Neuron([], 1)]
-#
-# # create network
-# neural_network = NeuralNetwork([input_layer, hidden_layer, output_layer])
-#
-
-NeuralNetwork.train(dataset, n_hidden=3, epochs=500, l_rate=0.5)
+NeuralNetwork.train(dataset, n_hidden=3, n_epochs=5, l_rate=0.5)
 
 
 
