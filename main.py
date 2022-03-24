@@ -1,41 +1,70 @@
 import numpy as np
 
 
+class Neuron:
+
+    def __init__(self, inputs, n_outputs):
+
+        """
+        Constructor to create a single neuron within a network's layer
+        :param inputs:  (list) floats either directly from dataset (for input layer), or the output of a neuron in
+        the previous layer (for hidden & output layers)
+        """
+        self.inputs = inputs
+        self.weights = np.random.rand(n_outputs)  # (list) randomly initialised set of weights
+        self.bias = np.random.rand()   # (float) initialise random bias
+        self.output = 0.0
+        self.delta = 0.0
+        self.db = 0.0
+
+
 class NeuralNetwork:
 
     def __init__(self, layers):
 
         """
-        Constructor requiring a list of integers representing the number of neurons in each layer.
-        :param layers:   (list) [in, ..., out]
-            in = number of inputs
-            ... = number of neurons in hidden layer, >1 intermediary number represents multiple hidden layers
-            out = number of outputs
+        Constructor to create a neural network by defining a general structure for the input, hidden & output layer
+        :param layers:   (2d list) [layer1, layer2, layer3]
+            layer1 = [i1, i2, ..., i_j] : input layer with j input neurons
+            layer2 = [h1, h2, ..., h_k] : hidden layer with k hidden neurons
+            layer3 = [o1] : output layer with 1 output neuron
         """
+        self.layers = layers    # list of (list of neuron objects)
 
-        self.layers = layers
+    def fwrd_prop(self):
 
-        # store random weights & 0 for derivatives of weights
-        # 2d array: rows = layers[i] (current layer neurons), columns = layers[i+1] (next layer neurons)
-        self.weights = [np.random.rand(layers[i], layers[i + 1]) for i in range(len(layers) - 1)]
-        self.dw = [np.zeros((layers[i], layers[i + 1])) for i in range(len(layers) - 1)]
+        new_inputs = []
+        previous_weights = []
+        for i, layer in enumerate(self.layers):
+            if i != 0:
+                # store weights of each neuron from previous layer:
+                previous_weights = [self.layers[i-1][j].weights for j in range(len(self.layers[i-1]))]
+                # print("layer", str(i-1), "weights:", previous_weights)
+            for j, neuron in enumerate(layer):
+                weights_in = [neuron_weights[j] for neuron_weights in previous_weights]    # store pr
+                # print("incoming weights to layer", str(i), weights_in)
+                weighted_sum = sum(np.multiply(neuron.inputs, weights_in)) + neuron.bias  # calc weighted sum (S)
+                u = NeuralNetwork.sigmoid(weighted_sum)    # apply sigmoid to weighted sum (u=f(S))
+                neuron.output = u   # save output into corresponding neuron
+                new_inputs.append(u)   # store output into list
 
-        # initialise all neuron outputs (activations) to 0
-        # 2d array: list storing list of n 0's for each layer
-        self.outputs = [np.zeros(layers[i]) for i in range(len(layers))]
+        print("outputs:", new_inputs)
+        return new_inputs
 
-        # store random biases & 0 for derivatives of biases
-        # 2d array: list storing list of biases for each layer
-        self.biases = [np.random.randn(layers[i+1], 1) for i in range(len(layers) - 1)]
-        self.db = [np.zeros((layers[i+1], 1)) for i in range(len(layers) - 1)]
+    def back_prop(self, correct_output=1):
 
-    def standardise(self, dataset):
-        # return 0.8 * ((val - min)/(max - min)) + 0.1
-        pass
+        deltas = []
+        for i, layer in reversed(list(enumerate(self.layers))):    # work back from last layer
+            for j, neuron in enumerate(layer):
+                derivative = NeuralNetwork.sigmoid_dxdy(neuron.output)  # calc f'(S)
+                delta = (correct_output - neuron.output) * derivative  # delta = error * f'(S)
+                neuron.delta = delta
+                # print("layer", str(j), delta)
+                deltas.append(delta)
 
-    def destandardise(self, dataset):
-        # return (standard - 0.1 / 0.8)(max - min) + min
-        pass
+        # print(deltas)
+        return deltas
+
 
     @staticmethod
     def sigmoid(S):
@@ -47,83 +76,75 @@ class NeuralNetwork:
         """
         return 1.0 / (1.0 + np.exp(-S))
 
-    def sigmoid_dxdy(self, x):
-        # return x * (1.0 - x)
-        pass
-
-    def fwrd_prop(self, inputs, test):
+    @staticmethod
+    def sigmoid_dxdy(u):
 
         """
-        Performs forward pass from one layer to the next, calculating the weighted sum, S of inputs and
-        applying the sigmoid function, f(S) to return an output, which is used as an input for the next layer.
-        :param inputs:    (list) input data of the form [x1, x2, ..., xn] where n = self.layers[0]
-        :param test:      (bool) set to True to include debug logs
-        :return: outputs: (list) calculated sigmoid values to use when passing backwards
+        Calculates the derivative of the sigmoid activation function for a given activation, u
+        :param u:   (float) value of the activation (i.e. f(S): sigmoid function applied to weighted sum)
+        :return:    (float) derivative output, f'(S)
         """
+        return u * (1.0 - u)
 
-        outputs = inputs    # store input layer
-        if test:
-            print("inputs:", outputs)
-            for b in self.biases:
-                print("stored biases:", b)
-        self.outputs[0] = outputs   # save outputs for backprop
-        bias = 0
-        new_inputs = []
-        for i, weight in enumerate(self.weights):
-            if test:
-                print("i:", i)
-            for j in range(len(self.biases[i])):
-                bias = self.biases[i][j][0]     # get current neuron's bias
-                if test:
-                    print("retrieved bias:", bias)
-            weighted_sum = np.dot(outputs, weight) + bias   # S : matrix mult. on previous output & weights
-            if test:
-                print("weighted sum:", weighted_sum)
-            outputs = NeuralNetwork.sigmoid(weighted_sum)   # f(S) : apply sigmoid function to weighted sum
-            new_inputs.append(outputs)
-            self.outputs[i + 1] = outputs   #    save outputs for next layer
-        if test:
-            print("new outputs:", new_inputs)
+    def update_weights(self, learn_rate):
 
-        return new_inputs
-
-    def back_prop(self, inputs):
-        # iterate backwards through previous layer
-            # apply sigmoid derivative function
-            # get neurons for current layer
-            # store derivatives after matrix mult
-        pass
-
-    def update_weights(self, learning_param):
-        # loop through all weights:
-            # weights = derivatives * learning_param
-        pass
-
-    def RMSE(self, modelled, observed):
-        # return math.sqrt(np.square(np.subtract(modelled, observed)).mean())
-        pass
-
-    def train(self, inputs, targets, epochs, learning_param):
-        # for i in len(epochs):
-            # standardise()
-            # iterate through all training data
-            # fwrd_prop()
-            # calc error
-            # back_prop error
-            # update_weights()
-            # RMSE(), append to sum of errors
-            # de-standardise()
-        pass
+        """
+        Updates all weights and biases in the network by descending the gradient of the error.
+        :param learn_rate:  (float) step size to adjust the gradient by (i.e. how quickly to learn)
+        """
+        for i in range(len(self.layers)):   # loop through layers
+            if i < len(self.layers)-1:
+                # print("i:", str(i))
+                # store delta of each neuron from next layer:
+                deltas = [self.layers[i+1][j].delta for j in range(len(self.layers[i][0].weights))]
+                # print("deltas:", deltas)
+                for neuron in self.layers[i]:   # for each neuron in a layer
+                    # print("current weights:", neuron.weights)
+                    neuron.weights = neuron.weights * deltas * learn_rate * neuron.output   # update weights
+                    neuron.bias += learn_rate * neuron.delta    # update bias
+                    # print("current bias:", neuron.bias)
+                    # print("new weights:", neuron.weights)
+                    # print("new bias:", neuron.bias)
 
 
-if __name__ == "__main__":
-    # import data
-    # create ANN
-    # train ANN
-    # initialise inputs, targets
-    # predict
-    nn = NeuralNetwork([2, 5, 1])
+    @staticmethod
+    def train(data, n_epochs, l_rate):
 
-    test_inputs = [1, 3]
-    nn.fwrd_prop(test_inputs, test=True)
-    print()
+        # get no. of hidden neurons
+        n_hidden = int(input("Enter no. of hidden neurons: "))
+
+        # create layers
+        input_layer = [Neuron([column], n_hidden) for column in dataset[0]]  # use 1st row for input neurons
+        print("input layer:", len(input_layer))
+        hidden_layer = [Neuron([0]*len(input_layer), 1) for k in range(n_hidden)]
+        output_layer = [Neuron([0]*len(hidden_layer), 1)]
+
+        # create network
+        neural_network = NeuralNetwork([input_layer, hidden_layer, output_layer])
+
+        for epoch in range(n_epochs):   # repeat for N epochs
+            for i, row in enumerate(data):  # for every row
+                neural_network.fwrd_prop()
+                neural_network.back_prop(correct_output=1)   # correct value = last column in input data
+                neural_network.update_weights(learn_rate=l_rate)
+                if i != len(data)-1:
+                    new_inputs = data[i+1]
+                # print("new inputs:", new_inputs)
+                for j, neuron in enumerate(input_layer):
+                    neuron.inputs = [new_inputs[j]]
+                    # print("neuron inputs:", neuron.inputs)
+            print("epochs:", str(epoch+1))
+
+
+dataset = [[np.random.rand() for i in range(2)] for j in range(5)]
+print("dataset:", dataset)
+
+NeuralNetwork.train(dataset, n_epochs=5000, l_rate=0.5)
+
+
+
+
+
+
+
+
