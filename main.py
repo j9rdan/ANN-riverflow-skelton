@@ -16,7 +16,6 @@ class Neuron:
         self.bias = np.random.rand()   # (float) initialise random bias
         self.output = 0.0
         self.delta = 0.0
-        # self.db = 0.0
 
 
 class NeuralNetwork:
@@ -37,7 +36,6 @@ class NeuralNetwork:
         """
         Calculates all the weighted sums starting from the input layer, using each neuron's incoming weights and
         respective bias, before applying the sigmoid function to each result and storing it in each neuron.
-
         :return new_inputs:   (list) results from sigmoid function for all neurons
         """
 
@@ -65,7 +63,6 @@ class NeuralNetwork:
         """
         Calculates delta for each neuron using the derivative of its output from the sigmoid function, starting back
         from the output layer towards the input layer.
-
         :param correct_output:  (float) standardised value we are trying to predict
         :return deltas:         (list) resulting deltas to be used in updating the weights
         """
@@ -109,11 +106,9 @@ class NeuralNetwork:
         Creates a neural network with a given number of hidden neurons, which is then trained by forward propagating,
         back-propagating and updating the inputs and weights for each row. This is repeated (trained) for a given number
         of epochs
-
-        :param data:    (2d list) dataset to train model on
-        :param n_epochs: (int)    number of epochs to train for
-        :param l_rate:  (float)   step size to adjust the gradient by (i.e. how quickly to learn)
-
+        :param data:     (2d list) dataset to train model on
+        :param n_epochs: (int)     number of epochs to train for
+        :param l_rate:   (float)   step size to adjust the gradient by (i.e. how quickly to learn)
         :return neural_network: (NeuralNetwork) trained network object
         """
 
@@ -121,17 +116,17 @@ class NeuralNetwork:
         n_hidden = int(input("Enter no. of hidden neurons: "))
 
         # create layers
-        input_layer = [Neuron([column], n_hidden) for column in data[0]]  # use 1st row for input neurons
+        input_layer = [Neuron([column], n_hidden) for column in data[0]]  # use 1st row of data for input neurons
         hidden_layer = [Neuron([0] * len(input_layer), 1) for _ in range(n_hidden)]
         output_layer = [Neuron([0] * len(hidden_layer), 1)]
 
         # create network
         neural_network = NeuralNetwork([input_layer, hidden_layer, output_layer])
 
-        for epoch in range(n_epochs):  # repeat for N epochs
+        for epoch in range(n_epochs):  # repeat for n epochs
             for i, row in enumerate(data):  # for every row
                 neural_network.fwrd_prop()
-                neural_network.back_prop(correct_output=1)  # correct value = last column in input data
+                neural_network.back_prop(correct_output=data[i][-1])  # correct value = last column in input data
                 neural_network.update_weights(learn_rate=l_rate)
                 if i != len(data) - 1:
                     new_inputs = data[i + 1]
@@ -173,7 +168,7 @@ class Calculator:
     @staticmethod
     def tan_h_dxdy(u):
         return 1 - (u ** 2)
-    
+
     @staticmethod
     def destandardise(u):
         pass
@@ -192,8 +187,8 @@ dataset = [[float(dataset_numstr[i][j]) for j in range(len(dataset_numstr[i]))] 
 
 # make a prediction:
 trained_network = NeuralNetwork.train(dataset, n_epochs=1000, l_rate=0.5)
-output = trained_network.fwrd_prop()[-1]   # get output layer output
-print("Next predicted mean daily flow at Skelton:", output)
+output = trained_network.fwrd_prop()[-1]   # get output from output layer
+print("Next predicted mean daily flow at Skelton:", Calculator.destandardise(output))
 
 
 
