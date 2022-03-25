@@ -1,6 +1,5 @@
 import csv
 import numpy as np
-import pandas as pd
 
 
 class Neuron:
@@ -17,7 +16,7 @@ class Neuron:
         self.bias = np.random.rand()   # (float) initialise random bias
         self.output = 0.0
         self.delta = 0.0
-        self.db = 0.0
+        # self.db = 0.0
 
 
 class NeuralNetwork:
@@ -35,6 +34,13 @@ class NeuralNetwork:
 
     def fwrd_prop(self):
 
+        """
+        Calculates all the weighted sums for a layer, using each neuron's incoming weights and respective bias, before
+        applying the sigmoid function to each result and storing in each neuron.
+
+        :return new_inputs:   (list) results from sigmoid function for all neurons
+        """
+
         new_inputs = []
         previous_weights = []
         for i, layer in enumerate(self.layers):
@@ -43,7 +49,8 @@ class NeuralNetwork:
                 previous_weights = [self.layers[i-1][j].weights for j in range(len(self.layers[i-1]))]
                 # print("layer", str(i-1), "weights:", previous_weights)
             for j, neuron in enumerate(layer):
-                weights_in = [neuron_weights[j] for neuron_weights in previous_weights]    # store pr
+                # store incoming weights for each neuron:
+                weights_in = [neuron_weights[j] for neuron_weights in previous_weights]
                 # print("incoming weights to layer", str(i), weights_in)
                 weighted_sum = sum(np.multiply(neuron.inputs, weights_in)) + neuron.bias  # calc weighted sum (S)
                 u = NeuralNetwork.sigmoid(weighted_sum)    # apply sigmoid to weighted sum (u=f(S))
@@ -94,8 +101,8 @@ class NeuralNetwork:
         n_hidden = int(input("Enter no. of hidden neurons: "))
 
         # create layers
-        input_layer = [Neuron([column], n_hidden) for column in dataset[0]]  # use 1st row for input neurons
-        hidden_layer = [Neuron([0] * len(input_layer), 1) for k in range(n_hidden)]
+        input_layer = [Neuron([column], n_hidden) for column in data[0]]  # use 1st row for input neurons
+        hidden_layer = [Neuron([0] * len(input_layer), 1) for _ in range(n_hidden)]
         output_layer = [Neuron([0] * len(hidden_layer), 1)]
 
         # create network
@@ -144,9 +151,9 @@ class NeuralNetwork:
     def tan_h_dxdy(u):
         return 1 - (u ** 2)
 
-####################################################################################################################
-####################################################################################################################
 
+####################################################################################################################
+####################################################################################################################
 
 # read & format csv file:
 file = open('test_data.csv', 'r')
@@ -158,7 +165,7 @@ dataset = [[float(dataset_numstr[i][j]) for j in range(len(dataset_numstr[i]))] 
 
 # make a prediction:
 trained_network = NeuralNetwork.train(dataset, n_epochs=1000, l_rate=0.5)
-output = trained_network.fwrd_prop()[-1]
+output = trained_network.fwrd_prop()[-1]   # get output layer output
 print("Next predicted mean daily flow at Skelton:", output)
 
 
