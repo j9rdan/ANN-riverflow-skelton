@@ -50,7 +50,7 @@ class NeuralNetwork:
                 neuron.output = u   # save output into corresponding neuron
                 new_inputs.append(u)   # store output into list
 
-        print("outputs:", new_inputs)
+        # print("outputs:", new_inputs)
         return new_inputs
 
     def back_prop(self, correct_output=1):
@@ -66,27 +66,6 @@ class NeuralNetwork:
 
         # print(deltas)
         return deltas
-
-
-    @staticmethod
-    def sigmoid(S):
-
-        """
-        Calculates the sigmoid activation function for a given weighted sum, S
-        :param S:   (float) value of the weighted sum
-        :return:    (float) output value, u = f(S)
-        """
-        return 1.0 / (1.0 + np.exp(-S))
-
-    @staticmethod
-    def sigmoid_dxdy(u):
-
-        """
-        Calculates the derivative of the sigmoid activation function for a given activation, u
-        :param u:   (float) value of the activation (i.e. f(S): sigmoid function applied to weighted sum)
-        :return:    (float) derivative output, f'(S)
-        """
-        return u * (1.0 - u)
 
     def update_weights(self, learn_rate):
 
@@ -116,7 +95,6 @@ class NeuralNetwork:
 
         # create layers
         input_layer = [Neuron([column], n_hidden) for column in dataset[0]]  # use 1st row for input neurons
-        print("input layer:", len(input_layer))
         hidden_layer = [Neuron([0] * len(input_layer), 1) for k in range(n_hidden)]
         output_layer = [Neuron([0] * len(hidden_layer), 1)]
 
@@ -136,11 +114,41 @@ class NeuralNetwork:
                     # print("neuron inputs:", neuron.inputs)
             print("epochs:", str(epoch + 1))
 
+        return neural_network
 
-# dataset = [[np.random.rand() for i in range(2)] for j in range(5)]
-# print("dataset:", dataset)
+    @staticmethod
+    def sigmoid(S):
+
+        """
+        Calculates the sigmoid activation function for a given weighted sum, S
+        :param S:   (float) value of the weighted sum
+        :return:    (float) output value, u = f(S)
+        """
+        return 1.0 / (1.0 + np.exp(-S))
+
+    @staticmethod
+    def sigmoid_dxdy(u):
+
+        """
+        Calculates the derivative of the sigmoid activation function for a given activation, u
+        :param u:   (float) value of the activation (i.e. f(S): sigmoid function applied to weighted sum)
+        :return:    (float) derivative output, f'(S)
+        """
+        return u * (1.0 - u)
+
+    @staticmethod
+    def tan_h(S):
+        return (np.exp(S) - np.exp(-S)) / (np.exp(S) + np.exp(-S))
+
+    @staticmethod
+    def tan_h_dxdy(u):
+        return 1 - (u ** 2)
+
+####################################################################################################################
+####################################################################################################################
 
 
+# read & format csv file:
 file = open('test_data.csv', 'r')
 data_reader = csv.reader(file, delimiter=',')
 dataset_str = [row[1:9] for row in data_reader]   # only number values from table
@@ -148,8 +156,10 @@ dataset_numstr = dataset_str[2:98]   # remove 98 when passing cleaned data
 dataset = [[float(dataset_numstr[i][j]) for j in range(len(dataset_numstr[i]))]   # convert all str columns to float
            for i in range(len(dataset_numstr))]
 
-NeuralNetwork.train(dataset, n_epochs=5000, l_rate=0.5)
-
+# make a prediction:
+trained_network = NeuralNetwork.train(dataset, n_epochs=1000, l_rate=0.5)
+output = trained_network.fwrd_prop()[-1]
+print("Next predicted mean daily flow at Skelton:", output)
 
 
 
