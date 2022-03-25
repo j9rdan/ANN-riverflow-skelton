@@ -35,8 +35,8 @@ class NeuralNetwork:
     def fwrd_prop(self):
 
         """
-        Calculates all the weighted sums for a layer, using each neuron's incoming weights and respective bias, before
-        applying the sigmoid function to each result and storing in each neuron.
+        Calculates all the weighted sums starting from the input layer, using each neuron's incoming weights and
+        respective bias, before applying the sigmoid function to each result and storing it in each neuron.
 
         :return new_inputs:   (list) results from sigmoid function for all neurons
         """
@@ -61,6 +61,14 @@ class NeuralNetwork:
         return new_inputs
 
     def back_prop(self, correct_output=1):
+
+        """
+        Calculates delta for each neuron using the derivative of its output from the sigmoid function, starting back
+        from the output layer towards the input layer.
+
+        :param correct_output:  (float) standardised value we are trying to predict
+        :return deltas:         (list) resulting deltas to be used in updating the weights
+        """
 
         deltas = []
         for i, layer in reversed(list(enumerate(self.layers))):    # work back from last layer
