@@ -1,4 +1,6 @@
+import csv
 import numpy as np
+import pandas as pd
 
 
 class Neuron:
@@ -106,7 +108,6 @@ class NeuralNetwork:
                     # print("new weights:", neuron.weights)
                     # print("new bias:", neuron.bias)
 
-
     @staticmethod
     def train(data, n_epochs, l_rate):
 
@@ -116,28 +117,36 @@ class NeuralNetwork:
         # create layers
         input_layer = [Neuron([column], n_hidden) for column in dataset[0]]  # use 1st row for input neurons
         print("input layer:", len(input_layer))
-        hidden_layer = [Neuron([0]*len(input_layer), 1) for k in range(n_hidden)]
-        output_layer = [Neuron([0]*len(hidden_layer), 1)]
+        hidden_layer = [Neuron([0] * len(input_layer), 1) for k in range(n_hidden)]
+        output_layer = [Neuron([0] * len(hidden_layer), 1)]
 
         # create network
         neural_network = NeuralNetwork([input_layer, hidden_layer, output_layer])
 
-        for epoch in range(n_epochs):   # repeat for N epochs
+        for epoch in range(n_epochs):  # repeat for N epochs
             for i, row in enumerate(data):  # for every row
                 neural_network.fwrd_prop()
-                neural_network.back_prop(correct_output=1)   # correct value = last column in input data
+                neural_network.back_prop(correct_output=1)  # correct value = last column in input data
                 neural_network.update_weights(learn_rate=l_rate)
-                if i != len(data)-1:
-                    new_inputs = data[i+1]
+                if i != len(data) - 1:
+                    new_inputs = data[i + 1]
                 # print("new inputs:", new_inputs)
                 for j, neuron in enumerate(input_layer):
                     neuron.inputs = [new_inputs[j]]
                     # print("neuron inputs:", neuron.inputs)
-            print("epochs:", str(epoch+1))
+            print("epochs:", str(epoch + 1))
 
 
-dataset = [[np.random.rand() for i in range(2)] for j in range(5)]
-print("dataset:", dataset)
+# dataset = [[np.random.rand() for i in range(2)] for j in range(5)]
+# print("dataset:", dataset)
+
+
+file = open('test_data.csv', 'r')
+data_reader = csv.reader(file, delimiter=',')
+dataset_str = [row[1:9] for row in data_reader]   # only number values from table
+dataset_numstr = dataset_str[2:98]   # remove 98 when passing cleaned data
+dataset = [[float(dataset_numstr[i][j]) for j in range(len(dataset_numstr[i]))]   # convert all str columns to float
+           for i in range(len(dataset_numstr))]
 
 NeuralNetwork.train(dataset, n_epochs=5000, l_rate=0.5)
 
