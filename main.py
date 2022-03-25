@@ -56,7 +56,7 @@ class NeuralNetwork:
                 neuron.output = u   # save output into corresponding neuron
                 new_inputs.append(u)   # store output into list
 
-        # print("outputs:", new_inputs)
+        print("outputs:", new_inputs)
         return new_inputs
 
     def back_prop(self, correct_output=1):
@@ -93,9 +93,7 @@ class NeuralNetwork:
                     neuron.weights = neuron.weights * deltas * learn_rate * neuron.output   # update weights
                     neuron.bias += learn_rate * neuron.delta    # update bias
 
-
-    @staticmethod
-    def train(data, n_epochs, l_rate):
+    def train(self, data, n_epochs, l_rate):
 
         """
         Creates a neural network with a given number of hidden neurons, which is then trained by forward propagating,
@@ -106,29 +104,16 @@ class NeuralNetwork:
         :return neural_network: (NeuralNetwork) trained network object
         """
 
-        # get no. of hidden neurons
-        n_hidden = int(input("Enter no. of hidden neurons: "))
-
-        # create layers
-        input_layer = [Neuron([column], n_hidden) for column in data[0]]  # use 1st row of data for input neurons
-        hidden_layer = [Neuron([0] * len(input_layer), 1) for _ in range(n_hidden)]
-        output_layer = [Neuron([0] * len(hidden_layer), 1)]
-
-        # create network
-        neural_network = NeuralNetwork([input_layer, hidden_layer, output_layer])
-
         for epoch in range(n_epochs):  # repeat for n epochs
             for i, row in enumerate(data):  # for every row
-                neural_network.fwrd_prop()
-                neural_network.back_prop(correct_output=data[i][-1])  # correct value = last column in input data
-                neural_network.update_weights(learn_rate=l_rate)
+                self.fwrd_prop()
+                self.back_prop(correct_output=data[i][-1])  # correct value = last column in input data
+                self.update_weights(learn_rate=l_rate)
                 if i != len(data) - 1:
                     new_inputs = data[i + 1]
-                for j, neuron in enumerate(input_layer):
+                for j, neuron in enumerate(self.layers[0]):
                     neuron.inputs = [new_inputs[j]]
-            # print("epochs:", str(epoch + 1))
-
-        return neural_network
+            print("epochs:", str(epoch + 1))
 
 
 class Calculator:
@@ -200,13 +185,18 @@ dataset_numstr = dataset_str[2:98]   # remove 98 when passing cleaned data
 dataset = [[float(dataset_numstr[i][j]) for j in range(len(dataset_numstr[i]))]   # convert all str columns to float
            for i in range(len(dataset_numstr))]
 
+# get no. of hidden neurons
+n_hidden = int(input("Enter no. of hidden neurons: "))
+
+# create layers
+input_layer = [Neuron([column], n_hidden) for column in dataset[0]]  # use 1st row of data for input neurons
+hidden_layer = [Neuron([0] * len(input_layer), 1) for _ in range(n_hidden)]
+output_layer = [Neuron([0] * len(hidden_layer), 1)]
+
+# create a network:
+neural_network = NeuralNetwork([input_layer, hidden_layer, output_layer])
+neural_network.train(dataset, n_epochs=1000, l_rate=0.5)
+
 # make a prediction:
-trained_network = NeuralNetwork.train(dataset, n_epochs=1, l_rate=0.5)  # train network
-output = trained_network.fwrd_prop()[-1]   # get output from output layer
+output = neural_network.fwrd_prop()[-1]    # get output from output layer
 print("Next predicted mean daily flow at Skelton:", Calculator.destandardise(output))
-
-
-
-
-
-
