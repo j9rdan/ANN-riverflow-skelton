@@ -53,7 +53,7 @@ class NeuralNetwork:
                 weights_in = [neuron_weights[j] for neuron_weights in previous_weights]
                 # print("incoming weights to layer", str(i), weights_in)
                 weighted_sum = sum(np.multiply(neuron.inputs, weights_in)) + neuron.bias  # calc weighted sum (S)
-                u = NeuralNetwork.sigmoid(weighted_sum)    # apply sigmoid to weighted sum (u=f(S))
+                u = Calculator.sigmoid(weighted_sum)    # apply sigmoid to weighted sum (u=f(S))
                 neuron.output = u   # save output into corresponding neuron
                 new_inputs.append(u)   # store output into list
 
@@ -73,7 +73,7 @@ class NeuralNetwork:
         deltas = []
         for i, layer in reversed(list(enumerate(self.layers))):    # work back from last layer
             for j, neuron in enumerate(layer):
-                derivative = NeuralNetwork.sigmoid_dxdy(neuron.output)  # calc f'(S)
+                derivative = Calculator.sigmoid_dxdy(neuron.output)  # calc f'(S)
                 delta = (correct_output - neuron.output) * derivative  # delta = error * f'(S)
                 neuron.delta = delta
                 # print("layer", str(j), delta)
@@ -143,6 +143,9 @@ class NeuralNetwork:
 
         return neural_network
 
+
+class Calculator:
+
     @staticmethod
     def sigmoid(S):
 
@@ -170,6 +173,10 @@ class NeuralNetwork:
     @staticmethod
     def tan_h_dxdy(u):
         return 1 - (u ** 2)
+    
+    @staticmethod
+    def destandardise(u):
+        pass
 
 
 ####################################################################################################################
