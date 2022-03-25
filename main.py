@@ -1,5 +1,6 @@
 import csv
 import numpy as np
+import math
 
 
 class Neuron:
@@ -173,6 +174,17 @@ class Calculator:
         return 1 - (u ** 2)
 
     @staticmethod
+    def RMSE(correct, actual):
+
+        """
+        Calculates the root mean squared error.
+        :param correct: (float) actual value the model is aiming for
+        :param actual:  (float) output value from training
+        :return:        (float) value of root mean squared error
+        """
+        return math.sqrt(np.square(np.subtract(correct, actual)).mean())
+
+    @staticmethod
     def destandardise(u):
         pass
 
@@ -189,10 +201,9 @@ dataset = [[float(dataset_numstr[i][j]) for j in range(len(dataset_numstr[i]))] 
            for i in range(len(dataset_numstr))]
 
 # make a prediction:
-trained_network = NeuralNetwork.train(dataset, n_epochs=1000, l_rate=0.5)  # train network
+trained_network = NeuralNetwork.train(dataset, n_epochs=1, l_rate=0.5)  # train network
 output = trained_network.fwrd_prop()[-1]   # get output from output layer
 print("Next predicted mean daily flow at Skelton:", Calculator.destandardise(output))
-
 
 
 
