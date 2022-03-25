@@ -105,6 +105,18 @@ class NeuralNetwork:
     @staticmethod
     def train(data, n_epochs, l_rate):
 
+        """
+        Creates a neural network with a given number of hidden neurons, which is then trained by forward propagating,
+        back-propagating and updating the inputs and weights for each row. This is repeated (trained) for a given number
+        of epochs
+
+        :param data:    (2d list) dataset to train model on
+        :param n_epochs: (int)    number of epochs to train for
+        :param l_rate:  (float)   step size to adjust the gradient by (i.e. how quickly to learn)
+
+        :return neural_network: (NeuralNetwork) trained network object
+        """
+
         # get no. of hidden neurons
         n_hidden = int(input("Enter no. of hidden neurons: "))
 
