@@ -11,9 +11,10 @@ class Neuron:
         :param inputs:  (list) floats either directly from dataset (for input layer), or the output of a neuron in
         the previous layer (for hidden & output layers)
         """
+
         self.inputs = inputs
         self.weights = np.random.rand(n_outputs)  # (list) randomly initialised set of weights
-        self.bias = np.random.rand()   # (float) initialise random bias
+        self.bias = np.random.rand()              # (float) initialise random bias
         self.output = 0.0
         self.delta = 0.0
 
@@ -29,6 +30,7 @@ class NeuralNetwork:
             layer2 = [h1, h2, ..., h_k] : hidden layer with k hidden neurons
             layer3 = [o1] : output layer with 1 output neuron
         """
+
         self.layers = layers    # list of (list of neuron objects)
 
     def fwrd_prop(self):
@@ -45,11 +47,9 @@ class NeuralNetwork:
             if i != 0:
                 # store weights of each neuron from previous layer:
                 previous_weights = [self.layers[i-1][j].weights for j in range(len(self.layers[i-1]))]
-                # print("layer", str(i-1), "weights:", previous_weights)
             for j, neuron in enumerate(layer):
                 # store incoming weights for each neuron:
                 weights_in = [neuron_weights[j] for neuron_weights in previous_weights]
-                # print("incoming weights to layer", str(i), weights_in)
                 weighted_sum = sum(np.multiply(neuron.inputs, weights_in)) + neuron.bias  # calc weighted sum (S)
                 u = Calculator.sigmoid(weighted_sum)    # apply sigmoid to weighted sum (u=f(S))
                 neuron.output = u   # save output into corresponding neuron
@@ -73,10 +73,8 @@ class NeuralNetwork:
                 derivative = Calculator.sigmoid_dxdy(neuron.output)  # calc f'(S)
                 delta = (correct_output - neuron.output) * derivative  # delta = error * f'(S)
                 neuron.delta = delta
-                # print("layer", str(j), delta)
                 deltas.append(delta)
 
-        # print(deltas)
         return deltas
 
     def update_weights(self, learn_rate):
@@ -85,27 +83,22 @@ class NeuralNetwork:
         Updates all weights and biases in the network by descending the gradient of the error.
         :param learn_rate:  (float) step size to adjust the gradient by (i.e. how quickly to learn)
         """
+        ##### FIX: LAST OUTPUT NODE STOPS UPDATING AFTER 10 EPOCHS #####
         for i in range(len(self.layers)):   # loop through layers
             if i < len(self.layers)-1:
-                # print("i:", str(i))
                 # store delta of each neuron from next layer:
                 deltas = [self.layers[i+1][j].delta for j in range(len(self.layers[i][0].weights))]
-                # print("deltas:", deltas)
                 for neuron in self.layers[i]:   # for each neuron in a layer
-                    # print("current weights:", neuron.weights)
                     neuron.weights = neuron.weights * deltas * learn_rate * neuron.output   # update weights
                     neuron.bias += learn_rate * neuron.delta    # update bias
-                    # print("current bias:", neuron.bias)
-                    # print("new weights:", neuron.weights)
-                    # print("new bias:", neuron.bias)
+
 
     @staticmethod
     def train(data, n_epochs, l_rate):
 
         """
         Creates a neural network with a given number of hidden neurons, which is then trained by forward propagating,
-        back-propagating and updating the inputs and weights for each row. This is repeated (trained) for a given number
-        of epochs
+        back-propagating and updating the inputs and weights for each row. This is repeated for a given number of epochs
         :param data:     (2d list) dataset to train model on
         :param n_epochs: (int)     number of epochs to train for
         :param l_rate:   (float)   step size to adjust the gradient by (i.e. how quickly to learn)
@@ -130,11 +123,9 @@ class NeuralNetwork:
                 neural_network.update_weights(learn_rate=l_rate)
                 if i != len(data) - 1:
                     new_inputs = data[i + 1]
-                # print("new inputs:", new_inputs)
                 for j, neuron in enumerate(input_layer):
                     neuron.inputs = [new_inputs[j]]
-                    # print("neuron inputs:", neuron.inputs)
-            print("epochs:", str(epoch + 1))
+            # print("epochs:", str(epoch + 1))
 
         return neural_network
 
@@ -163,10 +154,22 @@ class Calculator:
 
     @staticmethod
     def tan_h(S):
+
+        """
+        Calculates the tanh activation function for a given weighted sum, S
+        :param S:   (float) value of the weighted sum
+        :return:    (float) output value, u = f(S)
+        """
         return (np.exp(S) - np.exp(-S)) / (np.exp(S) + np.exp(-S))
 
     @staticmethod
     def tan_h_dxdy(u):
+
+        """
+        Calculates the derivative of the tanh activation function for a given activation, u
+        :param u:   (float) value of the activation (i.e. f(S): tanh function applied to weighted sum)
+        :return:    (float) derivative output, f'(S)
+        """
         return 1 - (u ** 2)
 
     @staticmethod
@@ -186,7 +189,7 @@ dataset = [[float(dataset_numstr[i][j]) for j in range(len(dataset_numstr[i]))] 
            for i in range(len(dataset_numstr))]
 
 # make a prediction:
-trained_network = NeuralNetwork.train(dataset, n_epochs=1000, l_rate=0.5)
+trained_network = NeuralNetwork.train(dataset, n_epochs=1000, l_rate=0.5)  # train network
 output = trained_network.fwrd_prop()[-1]   # get output from output layer
 print("Next predicted mean daily flow at Skelton:", Calculator.destandardise(output))
 
