@@ -94,11 +94,12 @@ class NeuralNetwork:
             if i < len(self.layers)-1:
                 # store delta of each neuron from next layer:
                 deltas = [self.layers[i+1][j].delta for j in range(len(self.layers[i][0].weights))]
-                for neuron in self.layers[i]:   # for each neuron in a layer
+            for neuron in self.layers[i]:   # for each neuron in a layer
+                if i < len(self.layers) - 1:
                     weight_change = [x * learn_rate for x in deltas]
                     weight_change = [x * neuron.output for x in weight_change]
                     neuron.weights += weight_change
-                    neuron.bias += learn_rate * neuron.delta  # update bias using wi,j = wi,j + p*δj*ui
+                neuron.bias += learn_rate * neuron.delta  # update bias using wi,j = wi,j + p*δj*ui
 
 
     def train(self, data, n_epochs, l_rate):
