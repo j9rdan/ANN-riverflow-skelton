@@ -56,7 +56,7 @@ class NeuralNetwork:
                 neuron.output = u   # save output into corresponding neuron
                 new_inputs.append(u)   # store output into list
 
-        print("outputs:", new_inputs)
+        # print("outputs:", new_inputs)
         return new_inputs
 
     def back_prop(self, correct_output=1):
@@ -96,23 +96,26 @@ class NeuralNetwork:
     def train(self, data, n_epochs, l_rate):
 
         """
-        Creates a neural network with a given number of hidden neurons, which is then trained by forward propagating,
-        back-propagating and updating the inputs and weights for each row. This is repeated for a given number of epochs
+        Trains a neural network by forward propagating, back-propagating and updating the inputs and weights for each
+        row. This is repeated for a given number of epochs
         :param data:     (2d list) dataset to train model on
         :param n_epochs: (int)     number of epochs to train for
         :param l_rate:   (float)   step size to adjust the gradient by (i.e. how quickly to learn)
-        :return neural_network: (NeuralNetwork) trained network object
         """
 
         for epoch in range(n_epochs):  # repeat for n epochs
+            final_output = 0
             for i, row in enumerate(data):  # for every row
-                self.fwrd_prop()
+                final_output = self.fwrd_prop()
                 self.back_prop(correct_output=data[i][-1])  # correct value = last column in input data
                 self.update_weights(learn_rate=l_rate)
                 if i != len(data) - 1:
                     new_inputs = data[i + 1]
                 for j, neuron in enumerate(self.layers[0]):
                     neuron.inputs = [new_inputs[j]]
+                self.layers[-1][0].output = new_inputs[-1]  # set output of output neuron to correct value?
+            error = Calculator.RMSE(correct=data[i][-1], actual=final_output[-1])
+            print("Error:", float(error))
             print("epochs:", str(epoch + 1))
 
 
