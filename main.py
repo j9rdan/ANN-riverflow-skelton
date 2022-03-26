@@ -14,7 +14,7 @@ class Neuron:
         """
 
         self.inputs = inputs
-        self.weights = np.random.rand(n_outputs)  # (list) randomly initialised set of weights
+        self.weights = np.random.rand(n_outputs)  # (list) randomly initialised set of outgoing weights
         self.bias = np.random.rand()              # (float) initialise random bias
         self.output = 0.0
         self.delta = 0.0
@@ -39,25 +39,31 @@ class NeuralNetwork:
         """
         Calculates all the weighted sums starting from the input layer, using each neuron's incoming weights and
         respective bias, before applying the sigmoid function to each result and storing it in each neuron.
-        :return new_inputs:   (list) results from sigmoid function for all neurons
+        :return output:   (list) results from sigmoid function for all neurons
         """
 
-        new_inputs = []
+        output = []
         previous_weights = []
         for i, layer in enumerate(self.layers):
+            new_inputs = output
+            output = []
             if i != 0:
                 # store weights of each neuron from previous layer:
                 previous_weights = [self.layers[i-1][j].weights for j in range(len(self.layers[i-1]))]
             for j, neuron in enumerate(layer):
+                if new_inputs:
+                    neuron.inputs = new_inputs
                 # store incoming weights for each neuron:
                 weights_in = [neuron_weights[j] for neuron_weights in previous_weights]
                 weighted_sum = sum(np.multiply(neuron.inputs, weights_in)) + neuron.bias  # calc weighted sum (S)
                 u = Calculator.sigmoid(weighted_sum)    # apply sigmoid to weighted sum (u=f(S))
                 neuron.output = u   # save output into corresponding neuron
-                new_inputs.append(u)   # store output into list
+                output.append(u)   # store output into list
+                # if i == len(self.layers) - 1:
+                #     print("final output:", output)
 
-        # print("outputs:", new_inputs)
-        return new_inputs
+        # print("outputs:", output)
+        return output
 
     def back_prop(self, correct_output=1):
 
@@ -84,14 +90,16 @@ class NeuralNetwork:
         Updates all weights and biases in the network by descending the gradient of the error.
         :param learn_rate:  (float) step size to adjust the gradient by (i.e. how quickly to learn)
         """
-        ##### FIX: LAST OUTPUT NODE STOPS UPDATING AFTER 10 EPOCHS #####
         for i in range(len(self.layers)):   # loop through layers
             if i < len(self.layers)-1:
                 # store delta of each neuron from next layer:
                 deltas = [self.layers[i+1][j].delta for j in range(len(self.layers[i][0].weights))]
                 for neuron in self.layers[i]:   # for each neuron in a layer
-                    neuron.weights = neuron.weights * deltas * learn_rate * neuron.output   # update weights
-                    neuron.bias += learn_rate * neuron.delta    # update bias
+                    weight_change = [x * learn_rate for x in deltas]
+                    weight_change = [x * neuron.output for x in weight_change]
+                    neuron.weights += weight_change
+                    neuron.bias += learn_rate * neuron.delta  # update bias using wi,j = wi,j + p*δj*ui
+
 
     def train(self, data, n_epochs, l_rate):
 
@@ -114,8 +122,8 @@ class NeuralNetwork:
                 for j, neuron in enumerate(self.layers[0]):
                     neuron.inputs = [new_inputs[j]]
                 self.layers[-1][0].output = new_inputs[-1]  # set output of output neuron to correct value?
-            error = Calculator.RMSE(correct=data[i][-1], actual=final_output[-1])
-            print("Error:", float(error))
+            # error = Calculator.RMSE(correct=data[i][-1], actual=final_output[-1])
+            # print("Error:", float(error))
             print("epochs:", str(epoch + 1))
 
 
@@ -201,5 +209,6 @@ neural_network = NeuralNetwork([input_layer, hidden_layer, output_layer])
 neural_network.train(dataset, n_epochs=1000, l_rate=0.5)
 
 # make a prediction:
-output = neural_network.fwrd_prop()[-1]    # get output from output layer
-print("Next predicted mean daily flow at Skelton:", Calculator.destandardise(output))
+prediction = neural_network.fwrd_prop()[-1]    # get output from output layer
+print("Next predicted mean daily flow at Skelton:", prediction)
+
