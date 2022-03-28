@@ -1,6 +1,7 @@
 import csv
 import numpy as np
-import math
+# import math
+import matplotlib.pyplot as plt
 
 
 class Neuron:
@@ -88,7 +89,7 @@ class NeuralNetwork:
                 delta = (correct_output - neuron.output) * derivative  # delta = error * f'(S)
                 neuron.delta = delta
                 if i == 2:
-                    error = neuron.output - correct_output
+                    error = correct_output - neuron.output
 
         return error
 
@@ -119,20 +120,28 @@ class NeuralNetwork:
         :param l_rate:   (float)   step size to adjust the gradient by (i.e. how quickly to learn)
         """
 
+        errors = []
+        errors_RMSE = []
         for epoch in range(n_epochs):  # repeat for n epochs
             for i, row in enumerate(data):  # for every row
                 prediction = self.fwrd_prop()
                 error = self.back_prop(correct_output=row[4])  # correct value = mean daily flow at Skelton on next day
                 if i == len(data)-1:    # output prediction on final row
-                    print("prediction:", prediction)
-                    print("error:", error)
+                    errors.append(error)
+                    rmse_result = Calculator.RMSE(errors)
+                    errors_RMSE.append(rmse_result)
                 self.update_weights(learn_rate=l_rate)
                 if i != len(data) - 1:
                     new_inputs = data[i + 1]
                 for j, neuron in enumerate(self.layers[0]):
                     neuron.inputs = [new_inputs[j]]
                 self.layers[-1][0].output = new_inputs[-1]  # set output of output neuron to correct value?
-            print("epochs:", str(epoch + 1))
+            # print("epochs:", str(epoch + 1))
+        x_axis = [i for i in range(len(errors_RMSE))]
+        plt.plot(x_axis, errors_RMSE)
+        plt.show()
+        ax = plt.gca()
+        ax.set_ylim([0, np.amax(errors_RMSE)])
 
 
 class Calculator:
@@ -178,15 +187,14 @@ class Calculator:
         return 1 - (u ** 2)
 
     @staticmethod
-    def RMSE(correct, actual):
+    def RMSE(errors):
 
         """
         Calculates the root mean squared error.
-        :param correct: (float) actual value the model is aiming for
-        :param actual:  (float) output value from training
+        :param errors: (list) actual value the model is aiming for
         :return:        (float) value of root mean squared error
         """
-        return math.sqrt(np.square(np.subtract(correct, actual)).mean())
+        return np.sqrt(sum(errors) / len(errors))
 
     @staticmethod
     def destandardise(u):
@@ -228,7 +236,7 @@ output_layer = [Neuron([0] * len(hidden_layer), 1)]
 
 # create a network:
 neural_network = NeuralNetwork([input_layer, hidden_layer, output_layer])
-neural_network.train(train_data, n_epochs=1000, l_rate=0.5)
+neural_network.train(train_data, n_epochs=100, l_rate=0.5)
 
 # make a prediction:
 # prediction = neural_network.fwrd_prop()    # get output from output layer
