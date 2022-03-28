@@ -44,6 +44,7 @@ class NeuralNetwork:
 
         output = []
         previous_weights = []
+        u = 0
         for i, layer in enumerate(self.layers):
             new_inputs = output
             output = []
@@ -61,11 +62,17 @@ class NeuralNetwork:
                 output.append(u)   # store output into list
                 # if i == len(self.layers) - 1:
                 #     print("final output:", output)
+            else:
+                for j, neuron in enumerate(layer):   # update outputs of input layer
+                    print("layer", i)
+                    print("output", j, "old:", neuron.output)
+                    neuron.output = neuron.inputs[0]
+                    print("output", j, "new:", neuron.output)
 
         # print("outputs:", output)
-        return output
+        return u
 
-    def back_prop(self, correct_output=1):
+    def back_prop(self, correct_output):
 
         """
         Calculates delta for each neuron using the derivative of its output from the sigmoid function, starting back
@@ -100,7 +107,6 @@ class NeuralNetwork:
                     weight_change = [x * neuron.output for x in weight_change]
                     neuron.weights += weight_change
                 neuron.bias += learn_rate * neuron.delta  # update bias using wi,j = wi,j + p*δj*ui
-
 
     def train(self, data, n_epochs, l_rate):
 
