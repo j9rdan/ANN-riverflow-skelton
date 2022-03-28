@@ -196,24 +196,39 @@ class Calculator:
 ####################################################################################################################
 ####################################################################################################################
 
-# read & format csv file:
-file = open('data.csv', 'r')
-data_reader = csv.reader(file, delimiter=',')
-dataset_str = [row[0:5] for row in data_reader]  # only number values from table
-dataset = [[float(dataset_str[i][j]) for j in range(len(dataset_str[i]))]  # convert all str columns to float
-           for i in range(len(dataset_str))]
+# train data
+train_file = open('train.csv', 'r')
+train_reader = csv.reader(train_file, delimiter=',')
+train_str = [row[0:5] for row in train_reader]  # only number values from table
+train_data = [[float(train_str[i][j]) for j in range(len(train_str[i]))]  # convert all str columns to float
+              for i in range(len(train_str))]
+
+# test data
+test_file = open('test.csv', 'r')
+test_reader = csv.reader(test_file, delimiter=',')
+test_str = [row[0:5] for row in test_reader]  # only number values from table
+test_data = [[float(test_str[i][j]) for j in range(len(test_str[i]))]  # convert all str columns to float
+             for i in range(len(test_str))]
+
+# validation data
+validation_file = open('validation.csv', 'r')
+validation_reader = csv.reader(validation_file, delimiter=',')
+validation_str = [row[0:5] for row in validation_reader]  # only number values from table
+validation_data = [[float(validation_str[i][j]) for j in range(len(validation_str[i]))]  # convert all str columns to float
+                   for i in range(len(validation_str))]
+
 
 # get no. of hidden neurons
 n_hidden = int(input("Enter no. of hidden neurons: "))
 
 # create layers
-input_layer = [Neuron([dataset[0][i]], n_hidden) for i in range(len(dataset[0])-1)]  # use 1st row of data for input neurons
+input_layer = [Neuron([train_data[0][i]], n_hidden) for i in range(len(train_data[0]) - 1)]  # use 1st row of data for input neurons
 hidden_layer = [Neuron([0] * len(input_layer), 1) for _ in range(n_hidden)]
 output_layer = [Neuron([0] * len(hidden_layer), 1)]
 
 # create a network:
 neural_network = NeuralNetwork([input_layer, hidden_layer, output_layer])
-neural_network.train(dataset, n_epochs=1000, l_rate=0.5)
+neural_network.train(train_data, n_epochs=1000, l_rate=0.5)
 
 # make a prediction:
 # prediction = neural_network.fwrd_prop()    # get output from output layer
