@@ -81,15 +81,16 @@ class NeuralNetwork:
         :return deltas:         (list) resulting deltas to be used in updating the weights
         """
 
-        deltas = []
+        error = 0.0
         for i, layer in reversed(list(enumerate(self.layers))):    # work back from last layer
-            for j, neuron in enumerate(layer):
+            for neuron in layer:
                 derivative = Calculator.sigmoid_dxdy(neuron.output)  # calc f'(S)
                 delta = (correct_output - neuron.output) * derivative  # delta = error * f'(S)
                 neuron.delta = delta
-                deltas.append(delta)
+                if i == 2:
+                    error = neuron.output - correct_output
 
-        return deltas
+        return error
 
     def update_weights(self, learn_rate):
 
