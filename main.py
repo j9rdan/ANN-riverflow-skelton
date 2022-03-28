@@ -64,10 +64,10 @@ class NeuralNetwork:
                 #     print("final output:", output)
             else:
                 for j, neuron in enumerate(layer):   # update outputs of input layer
-                    print("layer", i)
-                    print("output", j, "old:", neuron.output)
+                    # print("layer", i)
+                    # print("output", j, "old:", neuron.output)
                     neuron.output = neuron.inputs[0]
-                    print("output", j, "new:", neuron.output)
+                    # print("output", j, "new:", neuron.output)
 
         # print("outputs:", output)
         return u
@@ -120,18 +120,18 @@ class NeuralNetwork:
         """
 
         for epoch in range(n_epochs):  # repeat for n epochs
-            final_output = 0
             for i, row in enumerate(data):  # for every row
-                final_output = self.fwrd_prop()
-                self.back_prop(correct_output=data[i][-1])  # correct value = last column in input data
+                prediction = self.fwrd_prop()
+                error = self.back_prop(correct_output=row[4])  # correct value = mean daily flow at Skelton on next day
+                if i == len(data)-1:    # output prediction on final row
+                    print("prediction:", prediction)
+                    print("error:", error)
                 self.update_weights(learn_rate=l_rate)
                 if i != len(data) - 1:
                     new_inputs = data[i + 1]
                 for j, neuron in enumerate(self.layers[0]):
                     neuron.inputs = [new_inputs[j]]
                 self.layers[-1][0].output = new_inputs[-1]  # set output of output neuron to correct value?
-            # error = Calculator.RMSE(correct=data[i][-1], actual=final_output[-1])
-            # print("Error:", float(error))
             print("epochs:", str(epoch + 1))
 
 
@@ -197,18 +197,17 @@ class Calculator:
 ####################################################################################################################
 
 # read & format csv file:
-file = open('test_data.csv', 'r')
+file = open('data.csv', 'r')
 data_reader = csv.reader(file, delimiter=',')
-dataset_str = [row[1:9] for row in data_reader]   # only number values from table
-dataset_numstr = dataset_str[2:98]   # remove 98 when passing cleaned data
-dataset = [[float(dataset_numstr[i][j]) for j in range(len(dataset_numstr[i]))]   # convert all str columns to float
-           for i in range(len(dataset_numstr))]
+dataset_str = [row[0:5] for row in data_reader]  # only number values from table
+dataset = [[float(dataset_str[i][j]) for j in range(len(dataset_str[i]))]  # convert all str columns to float
+           for i in range(len(dataset_str))]
 
 # get no. of hidden neurons
 n_hidden = int(input("Enter no. of hidden neurons: "))
 
 # create layers
-input_layer = [Neuron([column], n_hidden) for column in dataset[0]]  # use 1st row of data for input neurons
+input_layer = [Neuron([dataset[0][i]], n_hidden) for i in range(len(dataset[0])-1)]  # use 1st row of data for input neurons
 hidden_layer = [Neuron([0] * len(input_layer), 1) for _ in range(n_hidden)]
 output_layer = [Neuron([0] * len(hidden_layer), 1)]
 
@@ -217,6 +216,6 @@ neural_network = NeuralNetwork([input_layer, hidden_layer, output_layer])
 neural_network.train(dataset, n_epochs=1000, l_rate=0.5)
 
 # make a prediction:
-prediction = neural_network.fwrd_prop()[-1]    # get output from output layer
-print("Next predicted mean daily flow at Skelton:", prediction)
+# prediction = neural_network.fwrd_prop()    # get output from output layer
+# print("Next predicted mean daily flow at Skelton:", prediction)
 
