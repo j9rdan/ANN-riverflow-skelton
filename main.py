@@ -1,6 +1,5 @@
 import csv
 import numpy as np
-# import math
 import matplotlib.pyplot as plt
 
 
@@ -10,8 +9,9 @@ class Neuron:
 
         """
         Constructor to create a single neuron within a network's layer
-        :param inputs:  (list) floats either directly from dataset (for input layer), or the output of a neuron in
-        the previous layer (for hidden & output layers)
+        :param inputs:   (list) floats either directly from dataset (for input layer), or the output of a neuron in
+                         the previous layer (for hidden & output layers)
+        :param n_outputs (int)  number of outgoing weights
         """
 
         self.inputs = inputs
@@ -40,7 +40,7 @@ class NeuralNetwork:
         """
         Calculates all the weighted sums starting from the input layer, using each neuron's incoming weights and
         respective bias, before applying the sigmoid function to each result and storing it in each neuron.
-        :return output:   (list) results from sigmoid function for all neurons
+        :return u:   (float) final result from sigmoid function for output layer neuron
         """
 
         output = []
@@ -79,7 +79,7 @@ class NeuralNetwork:
         Calculates delta for each neuron using the derivative of its output from the sigmoid function, starting back
         from the output layer towards the input layer.
         :param correct_output:  (float) standardised value we are trying to predict
-        :return deltas:         (list) resulting deltas to be used in updating the weights
+        :return error * error:  (float) square of the error to be used when calculating the root mean squared error
         """
 
         error = 0.0
@@ -91,7 +91,7 @@ class NeuralNetwork:
                 if i == 2:
                     error = correct_output - neuron.output
 
-        return error
+        return error * error
 
     def update_weights(self, learn_rate):
 
@@ -106,9 +106,9 @@ class NeuralNetwork:
             for neuron in self.layers[i]:   # for each neuron in a layer
                 if i < len(self.layers) - 1:
                     weight_change = [x * learn_rate for x in deltas]
-                    weight_change = [x * neuron.output for x in weight_change]
+                    weight_change = [x * neuron.output for x in weight_change] # update weights: w_i,j = w_i,j + (lrate * δ_j * u_i)
                     neuron.weights += weight_change
-                neuron.bias += learn_rate * neuron.delta  # update bias using wi,j = wi,j + p*δj*ui
+                neuron.bias += learn_rate * neuron.delta  # update bias: w_i,j = w_i,j + (lrate * δ_j)
 
     def train(self, data, n_epochs, l_rate):
 
@@ -140,11 +140,13 @@ class NeuralNetwork:
         x_axis = [i for i in range(len(errors_RMSE))]
         plt.plot(x_axis, errors_RMSE)
         plt.show()
-        ax = plt.gca()
-        ax.set_ylim([0, np.amax(errors_RMSE)])
 
 
 class Calculator:
+
+    """
+    Class responsible for math calculations required in the forward and backward pass.
+    """
 
     @staticmethod
     def sigmoid(S):
@@ -191,7 +193,7 @@ class Calculator:
 
         """
         Calculates the root mean squared error.
-        :param errors: (list) actual value the model is aiming for
+        :param errors:  (list) list of errors for final output node
         :return:        (float) value of root mean squared error
         """
         return np.sqrt(sum(errors) / len(errors))
@@ -218,11 +220,12 @@ test_str = [row[0:5] for row in test_reader]  # only number values from table
 test_data = [[float(test_str[i][j]) for j in range(len(test_str[i]))]  # convert all str columns to float
              for i in range(len(test_str))]
 
+
 # validation data
 validation_file = open('validation.csv', 'r')
 validation_reader = csv.reader(validation_file, delimiter=',')
-validation_str = [row[0:5] for row in validation_reader]  # only number values from table
-validation_data = [[float(validation_str[i][j]) for j in range(len(validation_str[i]))]  # convert all str columns to float
+validation_str = [row[0:5] for row in validation_reader]
+validation_data = [[float(validation_str[i][j]) for j in range(len(validation_str[i]))]
                    for i in range(len(validation_str))]
 
 
@@ -236,9 +239,6 @@ output_layer = [Neuron([0] * len(hidden_layer), 1)]
 
 # create a network:
 neural_network = NeuralNetwork([input_layer, hidden_layer, output_layer])
-neural_network.train(train_data, n_epochs=100, l_rate=0.5)
-
-# make a prediction:
-# prediction = neural_network.fwrd_prop()    # get output from output layer
-# print("Next predicted mean daily flow at Skelton:", prediction)
-
+neural_network.train(train_data, n_epochs=500, l_rate=0.01)
+neural_network.train(validation_data, n_epochs=500, l_rate=0.01)
+neural_network.train(test_data, n_epochs=500, l_rate=0.01)
