@@ -52,22 +52,22 @@ class NeuralNetwork:
             if i != 0:
                 # store weights of each neuron from previous layer:
                 previous_weights = [self.layers[i-1][j].weights for j in range(len(self.layers[i-1]))]
-            for j, neuron in enumerate(layer):
-                if new_inputs:
-                    neuron.inputs = new_inputs
-                # store incoming weights for each neuron:
-                weights_in = [neuron_weights[j] for neuron_weights in previous_weights]
-                weighted_sum = sum(np.multiply(neuron.inputs, weights_in)) + neuron.bias  # calc weighted sum (S)
-                u = Calculator.sigmoid(weighted_sum)    # apply sigmoid to weighted sum (u=f(S))
-                neuron.output = u   # save output into corresponding neuron
-                output.append(u)   # store output into list
-                # if i == len(self.layers) - 1:
-                #     print("final output:", output)
+                for j, neuron in enumerate(layer):
+                    if new_inputs:
+                        neuron.inputs = new_inputs
+                    # store incoming weights for each neuron:
+                    weights_in = [neuron_weights[j] for neuron_weights in previous_weights]
+                    weighted_sum = sum(np.multiply(neuron.inputs, weights_in)) + neuron.bias  # calc weighted sum (S)
+                    u = Calculator.sigmoid(weighted_sum)    # apply sigmoid to weighted sum (u=f(S))
+                    neuron.output = u   # save output into corresponding neuron
+                    output.append(u)   # store output into list
+                    # if i == len(self.layers) - 1:
+                    #     print("final output:", output)
             else:
                 for j, neuron in enumerate(layer):   # update outputs of input layer
                     # print("layer", i)
                     # print("output", j, "old:", neuron.output)
-                    neuron.output = neuron.inputs[0]
+                    output.append(neuron.inputs[0])
                     # print("output", j, "new:", neuron.output)
 
         # print("outputs:", output)
@@ -120,14 +120,14 @@ class NeuralNetwork:
         :param l_rate:   (float)   step size to adjust the gradient by (i.e. how quickly to learn)
         """
 
-        errors = []
         errors_RMSE = []
         for epoch in range(n_epochs):  # repeat for n epochs
+            errors = []
             for i, row in enumerate(data):  # for every row
-                prediction = self.fwrd_prop()
+                self.fwrd_prop()
                 error = self.back_prop(correct_output=row[4])  # correct value = mean daily flow at Skelton on next day
+                errors.append(error)
                 if i == len(data)-1:    # output prediction on final row
-                    errors.append(error)
                     rmse_result = Calculator.RMSE(errors)
                     errors_RMSE.append(rmse_result)
                 self.update_weights(learn_rate=l_rate)
@@ -135,10 +135,28 @@ class NeuralNetwork:
                     new_inputs = data[i + 1]
                 for j, neuron in enumerate(self.layers[0]):
                     neuron.inputs = [new_inputs[j]]
-                self.layers[-1][0].output = new_inputs[-1]  # set output of output neuron to correct value?
+                # self.layers[-1][0].output = new_inputs[-1]  # set output of output neuron to correct value?
             # print("epochs:", str(epoch + 1))
-        x_axis = [i for i in range(len(errors_RMSE))]
-        plt.plot(x_axis, errors_RMSE)
+        # x_axis = [i for i in range(len(errors_RMSE))]
+        # plt.plot(x_axis, errors_RMSE)
+        # plt.show()
+        return errors_RMSE
+
+    def predict(self, dataset):
+        predictions = []
+        correct_values = []
+        for i, row in enumerate(dataset):
+            correct_values.append(row[4])
+            predictions.append(self.fwrd_prop())
+            if i != len(dataset) - 1:
+                new_inputs = dataset[i + 1]
+            for j, perceptron in enumerate(self.layers[0]):  # define inputs for each
+                perceptron.inputs = [new_inputs[j]]
+
+        plt.plot(predictions)
+        plt.plot(correct_values)
+        plt.legend(["Predictions", "Correct Values"])
+        plt.title("Skelton Mean Daily Flow: Actual vs Predicted")
         plt.show()
 
 
@@ -239,6 +257,25 @@ output_layer = [Neuron([0] * len(hidden_layer), 1)]
 
 # create a network:
 neural_network = NeuralNetwork([input_layer, hidden_layer, output_layer])
-neural_network.train(train_data, n_epochs=500, l_rate=0.01)
-neural_network.train(validation_data, n_epochs=500, l_rate=0.01)
-neural_network.train(test_data, n_epochs=500, l_rate=0.01)
+epochs = 10
+
+# train using training and test sets:
+train_errors = neural_network.train(train_data, n_epochs=epochs, l_rate=0.01)
+test_errors = neural_network.train(test_data, n_epochs=epochs, l_rate=0.01)
+
+n_epochs = [i for i in range(epochs)]
+plt.plot(n_epochs, train_errors)
+plt.title("RMSE for Training Data")
+plt.xlabel("Epochs")
+plt.ylabel("RMSE")
+plt.show()
+
+plt.plot(n_epochs, test_errors)
+plt.title("RMSE for Test Data")
+plt.xlabel("Epochs")
+plt.ylabel("RMSE")
+plt.show()
+
+# predict using validation set:
+neural_network.predict(validation_data)
+
