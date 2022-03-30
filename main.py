@@ -192,7 +192,7 @@ class Calculator:
     def annealing(p, q, r, x):
 
         """
-        Calculates the annealing activation functiono
+        Dynamically calculates a new value for the learning parameter
         :param p:   (float) final learning parameter
         :param q:   (float) initial learning
         :param r:   (int)   total epochs trained for
