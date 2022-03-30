@@ -105,9 +105,15 @@ class NeuralNetwork:
                 deltas = [self.layers[i+1][j].delta for j in range(len(self.layers[i][0].weights))]
             for neuron in self.layers[i]:   # for each neuron in a layer
                 if i < len(self.layers) - 1:
-                    weight_change = [x * learn_rate for x in deltas]
-                    weight_change = [x * neuron.output for x in weight_change] # update weights: w_i,j = w_i,j + (lrate * δ_j * u_i)
-                    neuron.weights += weight_change
+                    new_weights = [x * learn_rate for x in deltas]
+                    new_weights = [x * neuron.output for x in new_weights] # update weights: w_i,j = w_i,j + (lrate * δ_j * u_i)
+                    weight_change = np.subtract(new_weights, neuron.weights)
+                    # print("i:", i)
+                    # print("weight change:", weight_change)
+                    weight_change = [0.9 * i for i in weight_change]    # α = 0.9
+                    # print("new weights:", new_weights)
+                    new_weights = np.add(new_weights, weight_change)
+                    neuron.weights += new_weights
                 neuron.bias += learn_rate * neuron.delta  # update bias: w_i,j = w_i,j + (lrate * δ_j)
 
     def train(self, data, n_epochs, l_rate):
@@ -155,7 +161,7 @@ class NeuralNetwork:
 
         plt.plot(predictions)
         plt.plot(correct_values)
-        plt.legend(["Predictions", "Correct Values"])
+        plt.legend(["Predictions", "Expected"])
         plt.title("Skelton Mean Daily Flow: Actual vs Predicted")
         plt.show()
 
@@ -257,11 +263,11 @@ output_layer = [Neuron([0] * len(hidden_layer), 1)]
 
 # create a network:
 neural_network = NeuralNetwork([input_layer, hidden_layer, output_layer])
-epochs = 10
+epochs = 1000
 
 # train using training and test sets:
-train_errors = neural_network.train(train_data, n_epochs=epochs, l_rate=0.01)
-test_errors = neural_network.train(test_data, n_epochs=epochs, l_rate=0.01)
+train_errors = neural_network.train(train_data, n_epochs=epochs, l_rate=0.5)
+test_errors = neural_network.train(test_data, n_epochs=epochs, l_rate=0.5)
 
 n_epochs = [i for i in range(epochs)]
 plt.plot(n_epochs, train_errors)
