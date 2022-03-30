@@ -35,7 +35,7 @@ class NeuralNetwork:
 
         self.layers = layers    # list of (list of neuron objects)
 
-    def fwrd_prop(self):
+    def fwrd_prop(self, current_epoch):
 
         """
         Calculates all the weighted sums starting from the input layer, using each neuron's incoming weights and
@@ -58,7 +58,7 @@ class NeuralNetwork:
                     # store incoming weights for each neuron:
                     weights_in = [neuron_weights[j] for neuron_weights in previous_weights]
                     weighted_sum = sum(np.multiply(neuron.inputs, weights_in)) + neuron.bias  # calc weighted sum (S)
-                    u = Calculator.sigmoid(weighted_sum)    # apply sigmoid to weighted sum (u=f(S))
+                    u = Calculator.annealing(0.1, 0.01, 100, current_epoch)    # apply sigmoid to weighted sum (u=f(S))
                     neuron.output = u   # save output into corresponding neuron
                     output.append(u)   # store output into list
                     # if i == len(self.layers) - 1:
@@ -124,7 +124,7 @@ class NeuralNetwork:
         for epoch in range(n_epochs):  # repeat for n epochs
             errors = []
             for i, row in enumerate(data):  # for every row
-                self.fwrd_prop()
+                self.fwrd_prop(epoch)
                 error = self.back_prop(correct_output=row[4])  # correct value = mean daily flow at Skelton on next day
                 errors.append(error)
                 if i == len(data)-1:    # output prediction on final row
@@ -147,7 +147,7 @@ class NeuralNetwork:
         correct_values = []
         for i, row in enumerate(dataset):
             correct_values.append(row[4])
-            predictions.append(self.fwrd_prop())
+            predictions.append(self.fwrd_prop(1))
             if i != len(dataset) - 1:
                 new_inputs = dataset[i + 1]
             for j, perceptron in enumerate(self.layers[0]):  # define inputs for each
@@ -187,24 +187,8 @@ class Calculator:
         return u * (1.0 - u)
 
     @staticmethod
-    def tan_h(S):
-
-        """
-        Calculates the tanh activation function for a given weighted sum, S
-        :param S:   (float) value of the weighted sum
-        :return:    (float) output value, u = f(S)
-        """
-        return (np.exp(S) - np.exp(-S)) / (np.exp(S) + np.exp(-S))
-
-    @staticmethod
-    def tan_h_dxdy(u):
-
-        """
-        Calculates the derivative of the tanh activation function for a given activation, u
-        :param u:   (float) value of the activation (i.e. f(S): tanh function applied to weighted sum)
-        :return:    (float) derivative output, f'(S)
-        """
-        return 1 - (u ** 2)
+    def annealing(p, q, r, x):
+        return p + ((q - p) * (1.0 - (1.0 / (1.0 + np.exp(10 - (20 * x / r))))))
 
     @staticmethod
     def RMSE(errors):
@@ -257,11 +241,11 @@ output_layer = [Neuron([0] * len(hidden_layer), 1)]
 
 # create a network:
 neural_network = NeuralNetwork([input_layer, hidden_layer, output_layer])
-epochs = 1000
+epochs = 100
 
 # train using training and test sets:
-train_errors = neural_network.train(train_data, n_epochs=epochs, l_rate=0.01)
-test_errors = neural_network.train(test_data, n_epochs=epochs, l_rate=0.01)
+train_errors = neural_network.train(train_data, n_epochs=epochs, l_rate=0.5)
+test_errors = neural_network.train(test_data, n_epochs=epochs, l_rate=0.5)
 
 n_epochs = [i for i in range(epochs)]
 plt.plot(n_epochs, train_errors)
