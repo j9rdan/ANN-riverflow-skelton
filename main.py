@@ -231,12 +231,13 @@ output_layer = [Neuron([0] * len(hidden_layer), 1)]
 
 # create a network:
 neural_network = NeuralNetwork([input_layer, hidden_layer, output_layer])
-epochs = 1000
+epochs = 10000
 
 # train using training and test sets:
-train_errors = neural_network.train(train_data, n_epochs=epochs, l_rate=0.01)
-test_errors = neural_network.train(test_data, n_epochs=epochs, l_rate=0.01)
+train_errors = neural_network.train(train_data, n_epochs=epochs, l_rate=0.5)
+test_errors = neural_network.train(test_data, n_epochs=epochs, l_rate=0.5)
 
+# plot error graphs:
 n_epochs = [i for i in range(epochs)]
 plt.plot(n_epochs, train_errors)
 plt.title("RMSE for Training Data")
