@@ -58,7 +58,8 @@ class NeuralNetwork:
                     # store incoming weights for each neuron:
                     weights_in = [neuron_weights[j] for neuron_weights in previous_weights]
                     weighted_sum = sum(np.multiply(neuron.inputs, weights_in)) + neuron.bias  # calc weighted sum (S)
-                    u = Calculator.annealing(0.1, 0.01, 100, current_epoch)    # apply sigmoid to weighted sum (u=f(S))
+                    # u = Calculator.sigmoid(weighted_sum)    # apply sigmoid to weighted sum (u=f(S))
+                    u = Calculator.annealing(0.7, 0.5, 100, current_epoch)    # uncomment to plot p vs epochs
                     neuron.output = u   # save output into corresponding neuron
                     output.append(u)   # store output into list
                     # if i == len(self.layers) - 1:
@@ -130,6 +131,7 @@ class NeuralNetwork:
                 if i == len(data)-1:    # output prediction on final row
                     rmse_result = Calculator.RMSE(errors)
                     errors_RMSE.append(rmse_result)
+                l_rate = Calculator.annealing(0.7, 0.5, n_epochs, epoch)    # annealing
                 self.update_weights(learn_rate=l_rate)
                 if i != len(data) - 1:
                     new_inputs = data[i + 1]
@@ -188,6 +190,15 @@ class Calculator:
 
     @staticmethod
     def annealing(p, q, r, x):
+
+        """
+        Calculates the annealing activation functiono
+        :param p:   (float) final learning parameter
+        :param q:   (float) initial learning
+        :param r:   (int)   total epochs trained for
+        :param x:   (int)   current epochs so far
+        :return:    (float) output of the annealing function
+        """
         return p + ((q - p) * (1.0 - (1.0 / (1.0 + np.exp(10 - (20 * x / r))))))
 
     @staticmethod
@@ -249,15 +260,15 @@ test_errors = neural_network.train(test_data, n_epochs=epochs, l_rate=0.5)
 
 n_epochs = [i for i in range(epochs)]
 plt.plot(n_epochs, train_errors)
-plt.title("RMSE for Training Data")
+plt.title("Learning Parameter for Training Data")
 plt.xlabel("Epochs")
-plt.ylabel("RMSE")
+plt.ylabel("Learning Parameter")
 plt.show()
 
 plt.plot(n_epochs, test_errors)
-plt.title("RMSE for Test Data")
+plt.title("Learning parameters for Test Data")
 plt.xlabel("Epochs")
-plt.ylabel("RMSE")
+plt.ylabel("Learning Parameter")
 plt.show()
 
 # predict using validation set:
