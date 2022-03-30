@@ -61,16 +61,10 @@ class NeuralNetwork:
                     u = Calculator.sigmoid(weighted_sum)    # apply sigmoid to weighted sum (u=f(S))
                     neuron.output = u   # save output into corresponding neuron
                     output.append(u)   # store output into list
-                    # if i == len(self.layers) - 1:
-                    #     print("final output:", output)
             else:
                 for j, neuron in enumerate(layer):   # update outputs of input layer
-                    # print("layer", i)
-                    # print("output", j, "old:", neuron.output)
                     output.append(neuron.inputs[0])
-                    # print("output", j, "new:", neuron.output)
 
-        # print("outputs:", output)
         return u
 
     def back_prop(self, correct_output):
@@ -89,7 +83,7 @@ class NeuralNetwork:
                 delta = (correct_output - neuron.output) * derivative  # delta = error * f'(S)
                 neuron.delta = delta
                 if i == 2:
-                    error = correct_output - neuron.output
+                    error = correct_output - neuron.output  # get error of final output node
 
         return error * error
 
@@ -115,9 +109,10 @@ class NeuralNetwork:
         """
         Trains a neural network by forward propagating, back-propagating and updating the inputs and weights for each
         row. This is repeated for a given number of epochs
-        :param data:     (2d list) dataset to train model on
-        :param n_epochs: (int)     number of epochs to train for
-        :param l_rate:   (float)   step size to adjust the gradient by (i.e. how quickly to learn)
+        :param data:        (2d list) dataset to train model on
+        :param n_epochs:    (int)     number of epochs to train for
+        :param l_rate:      (float)   step size to adjust the gradient by (i.e. how quickly to learn)
+        :return errors_RMSE (list)    list of root mean squared errors
         """
 
         errors_RMSE = []
@@ -130,29 +125,32 @@ class NeuralNetwork:
                 if i == len(data)-1:    # output prediction on final row
                     rmse_result = Calculator.RMSE(errors)
                     errors_RMSE.append(rmse_result)
-                self.update_weights(learn_rate=l_rate)
+                self.update_weights(learn_rate=l_rate)  # gradient descent
                 if i != len(data) - 1:
-                    new_inputs = data[i + 1]
+                    new_inputs = data[i + 1]    # get next row of data
                 for j, neuron in enumerate(self.layers[0]):
-                    neuron.inputs = [new_inputs[j]]
-                # self.layers[-1][0].output = new_inputs[-1]  # set output of output neuron to correct value?
-            # print("epochs:", str(epoch + 1))
-        # x_axis = [i for i in range(len(errors_RMSE))]
-        # plt.plot(x_axis, errors_RMSE)
-        # plt.show()
+                    neuron.inputs = [new_inputs[j]]     # set input layer inputs to next row
+
         return errors_RMSE
 
     def predict(self, dataset):
+
+        """
+        Performs a single forward pass for all rows in the data to generate a prediction. Plots the results on a graph
+        of the expected output against the actual output
+        :param dataset: (list)  dataset to make prediction on
+        """
         predictions = []
         correct_values = []
         for i, row in enumerate(dataset):
-            correct_values.append(row[4])
-            predictions.append(self.fwrd_prop())
+            correct_values.append(row[4])   # store all correct values
+            predictions.append(self.fwrd_prop())    # store all predictions
             if i != len(dataset) - 1:
-                new_inputs = dataset[i + 1]
-            for j, perceptron in enumerate(self.layers[0]):  # define inputs for each
-                perceptron.inputs = [new_inputs[j]]
+                new_inputs = dataset[i + 1]    # get next row of data
+            for j, perceptron in enumerate(self.layers[0]):
+                perceptron.inputs = [new_inputs[j]] # set input layer inputs to next row
 
+        # plot graphs:
         plt.plot(predictions)
         plt.plot(correct_values)
         plt.legend(["Predictions", "Expected"])
@@ -187,26 +185,6 @@ class Calculator:
         return u * (1.0 - u)
 
     @staticmethod
-    def tan_h(S):
-
-        """
-        Calculates the tanh activation function for a given weighted sum, S
-        :param S:   (float) value of the weighted sum
-        :return:    (float) output value, u = f(S)
-        """
-        return (np.exp(S) - np.exp(-S)) / (np.exp(S) + np.exp(-S))
-
-    @staticmethod
-    def tan_h_dxdy(u):
-
-        """
-        Calculates the derivative of the tanh activation function for a given activation, u
-        :param u:   (float) value of the activation (i.e. f(S): tanh function applied to weighted sum)
-        :return:    (float) derivative output, f'(S)
-        """
-        return 1 - (u ** 2)
-
-    @staticmethod
     def RMSE(errors):
 
         """
@@ -215,10 +193,6 @@ class Calculator:
         :return:        (float) value of root mean squared error
         """
         return np.sqrt(sum(errors) / len(errors))
-
-    @staticmethod
-    def destandardise(u):
-        pass
 
 
 ####################################################################################################################
